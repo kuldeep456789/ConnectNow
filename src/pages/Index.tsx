@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+// import callImg from "@/call.jpg";
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -166,14 +167,25 @@ const Index: React.FC = () => {
       {/* ===== HERO SECTION ===== */}
       <section className="container mx-auto px-4 py-32 md:py-40 text-center">
         <div className="max-w-4xl mx-auto animate-fade-in">
-          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Connect Instantly —{" "}
-            <span className="gradient-primary bg-clip-text text-transparent">No Limits</span>
-          </h2>
-          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Experience seamless video conferencing with crystal-clear quality,
-            advanced features, and zero hassle. Join millions connecting worldwide.
-          </p>
+          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-center">
+  Connect Instantly —{" "}
+  <span className="gradient-primary bg-clip-text text-transparent">
+    No Limits
+  </span>
+</h2>
+
+{/* Animated & Hoverable Image Box */}
+<div className="w-full max-w-4xl mx-auto mb-12 overflow-hidden rounded-xl relative group">
+  <img
+    src="/dashboard.jpeg" // replace with your image path
+    alt="Video Conferencing Illustration"
+    className="w-full h-auto object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+  />
+  {/* Gradient Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-700"></div>
+</div>
+
+
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button
