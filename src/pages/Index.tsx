@@ -167,11 +167,19 @@ const Index: React.FC = () => {
       {/* ===== HERO SECTION ===== */}
       <section className="container mx-auto px-4 py-32 md:py-40 text-center">
         <div className="max-w-4xl mx-auto animate-fade-in">
-          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-center">
+          {/* <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-center">
   Connect Instantly —{" "}
-  <span className="gradient-primary bg-clip-text text-transparent">
-    No Limits
-  </span>
+</h2> */}
+
+ <h2
+  className="text-2xl md:text-6xl tracking-tight uppercase italic font-extrabold mb-4 text-center"
+  style={{
+    fontFamily: '"Anton", sans-serif',
+    color: '#0d9ebbff', // Matches the stylish pink/purple in your image
+    textShadow: '0 2px 6px rgba(0,0,0,0.13), 0 1px 0 rgba(0,0,0,0.10)'
+  }}
+>
+  Video Streaming Architecture for Distance Connect
 </h2>
 
 {/* Animated & Hoverable Image Box */}
