@@ -1,17 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { 
-  Mic, MicOff, Video, VideoOff, PhoneOff, 
-  Monitor, MessageSquare, Users, MoreVertical 
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  PhoneOff,
+  Monitor,
+  MessageSquare,
+  Users,
+  MoreVertical,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 const Meeting = () => {
   const { meetingId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [user, setUser] = useState<any>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -19,10 +28,18 @@ const Meeting = () => {
   const [showParticipants, setShowParticipants] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  // ✅ Check authentication
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
         if (error) {
           console.error("Session error:", error);
           toast({
@@ -33,7 +50,7 @@ const Meeting = () => {
           navigate("/auth");
           return;
         }
-        
+
         if (!session) {
           toast({
             title: "Authentication Required",
@@ -49,8 +66,12 @@ const Meeting = () => {
         navigate("/auth");
       }
     };
+
     checkUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         toast({
           title: "Session Expired",
@@ -61,36 +82,63 @@ const Meeting = () => {
         setUser(session.user);
       }
     });
+
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
-  // Load messages and subscribe to realtime updates
-  useEffect(() => {
-    if (!user || !meetingId) return;
-    // Load existing messages
-    const loadMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('meeting_id', meetingId)
-        .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error("Error loading messages:", error);
-      } else {
-        setMessages(data || []);
+  // ✅ Start local video stream
+  useEffect(() => {
+    if (!user) return;
+
+    const startLocalStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        setLocalStream(stream);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("Error accessing media devices:", err);
+        toast({
+          title: "Camera/Microphone Error",
+          description: "Please allow access to your camera and microphone.",
+          variant: "destructive",
+        });
       }
     };
+
+    startLocalStream();
+  }, [user, toast]);
+
+  // ✅ Load and subscribe to chat messages
+  useEffect(() => {
+    if (!user || !meetingId) return;
+
+    const loadMessages = async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("meeting_id", meetingId)
+        .order("created_at", { ascending: true });
+
+      if (error) console.error("Error loading messages:", error);
+      else setMessages(data || []);
+    };
+
     loadMessages();
-    // Subscribe to new messages
+
     const channel = supabase
       .channel(`meeting-${meetingId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `meeting_id=eq.${meetingId}`
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `meeting_id=eq.${meetingId}`,
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new]);
@@ -102,34 +150,18 @@ const Meeting = () => {
       supabase.removeChannel(channel);
     };
   }, [user, meetingId]);
-  const handleLeave = () => {
-    toast({
-      title: "Left meeting",
-      description: "You have left the meeting",
-    });
-    navigate("/dashboard");
-  };
 
-  const copyMeetingLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/meeting/${meetingId}`);
-    toast({
-      title: "Link copied!",
-      description: "Meeting link copied to clipboard",
-    });
-  };
-
+  // ✅ Send message
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          meeting_id: meetingId,
-          user_id: user.id,
-          user_email: user.email || 'Anonymous',
-          content: newMessage.trim()
-        });
+      const { error } = await supabase.from("messages").insert({
+        meeting_id: meetingId,
+        user_id: user.id,
+        user_email: user.email || "Anonymous",
+        content: newMessage.trim(),
+      });
 
       if (error) {
         toast({
@@ -145,16 +177,37 @@ const Meeting = () => {
     }
   };
 
+  // ✅ Leave meeting
+  const handleLeave = () => {
+    toast({
+      title: "Left meeting",
+      description: "You have left the meeting",
+    });
+
+    if (localStream) {
+      localStream.getTracks().forEach((t) => t.stop());
+    }
+
+    navigate("/dashboard");
+  };
+
+  // ✅ Copy meeting link
+  const copyMeetingLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/meeting/${meetingId}`);
+    toast({
+      title: "Link copied!",
+      description: "Meeting link copied to clipboard",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* ===== Header ===== */}
       <header className="glass-card border-b border-border/50 px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold">Meeting: {meetingId}</h1>
-            <button 
-              onClick={copyMeetingLink}
-              className="text-xs text-accent hover:underline"
-            >
+            <button onClick={copyMeetingLink} className="text-xs text-accent hover:underline">
               Copy meeting link
             </button>
           </div>
@@ -165,40 +218,50 @@ const Meeting = () => {
         </div>
       </header>
 
+      {/* ===== Main Content ===== */}
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1 p-4">
           <div className="h-full grid grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((participant) => (
-              <Card 
-                key={participant}
-                className="glass-card shadow-card relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 flex items-center justify-center bg-secondary/50">
-                  <div className="h-24 w-24 rounded-full gradient-primary flex items-center justify-center text-3xl font-bold">
-                    {participant === 1 ? user?.email?.[0].toUpperCase() : `P${participant}`}
+            {/* ✅ Local Video Tile */}
+            <Card className="glass-card shadow-card relative overflow-hidden">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover rounded-lg"
+              />
+              <div className="absolute bottom-4 left-4 glass-card px-3 py-1 rounded-lg text-sm">
+                You ({user?.email})
+              </div>
+            </Card>
+
+            {/* ✅ Remote Placeholders */}
+            {[1, 2, 3].map((p) => (
+              <Card key={p} className="glass-card shadow-card relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center bg-secondary/40">
+                  <div className="h-20 w-20 rounded-full bg-accent/40 flex items-center justify-center text-lg font-bold">
+                    P{p}
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-4 glass-card px-3 py-1 rounded-lg text-sm">
-                  {participant === 1 ? "You" : `Participant ${participant}`}
+                  Participant {p}
                 </div>
               </Card>
             ))}
           </div>
         </div>
 
+        {/* ===== Chat Sidebar ===== */}
         {showChat && (
           <div className="w-80 glass-card border-l border-border/50 p-4 animate-slide-in flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">Chat</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowChat(false)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowChat(false)}>
                 ×
               </Button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto mb-4 space-y-2">
               {messages.length === 0 ? (
                 <div className="text-sm text-muted-foreground text-center py-8">
@@ -206,16 +269,16 @@ const Meeting = () => {
                 </div>
               ) : (
                 messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
+                  <div
+                    key={msg.id}
                     className={`p-2 rounded-lg ${
-                      msg.user_id === user?.id 
-                        ? 'bg-primary/20 ml-4' 
-                        : 'bg-secondary/50 mr-4'
+                      msg.user_id === user?.id
+                        ? "bg-primary/20 ml-4"
+                        : "bg-secondary/50 mr-4"
                     }`}
                   >
                     <p className="text-xs text-muted-foreground mb-1">
-                      {msg.user_id === user?.id ? 'You' : msg.user_email}
+                      {msg.user_id === user?.id ? "You" : msg.user_email}
                     </p>
                     <p className="text-sm">{msg.content}</p>
                   </div>
@@ -228,30 +291,23 @@ const Meeting = () => {
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Type a message..."
                 className="flex-1 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              <Button 
-                onClick={sendMessage}
-                size="sm"
-                disabled={!newMessage.trim()}
-              >
+              <Button onClick={sendMessage} size="sm" disabled={!newMessage.trim()}>
                 Send
               </Button>
             </div>
           </div>
         )}
 
+        {/* ===== Participants Sidebar ===== */}
         {showParticipants && (
           <div className="w-80 glass-card border-l border-border/50 p-4 animate-slide-in">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">Participants (4)</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowParticipants(false)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowParticipants(false)}>
                 ×
               </Button>
             </div>
@@ -270,34 +326,45 @@ const Meeting = () => {
         )}
       </div>
 
+      {/* ===== Bottom Controls ===== */}
       <div className="glass-card border-t border-border/50 p-4">
         <div className="flex items-center justify-center gap-3">
+          {/* Mic */}
           <Button
             variant={isMuted ? "destructive" : "secondary"}
             size="icon"
             className="h-12 w-12 rounded-full"
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={() => {
+              if (localStream) {
+                localStream.getAudioTracks().forEach((t) => (t.enabled = isMuted));
+              }
+              setIsMuted(!isMuted);
+            }}
           >
             {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
 
+          {/* Video */}
           <Button
             variant={isVideoOff ? "destructive" : "secondary"}
             size="icon"
             className="h-12 w-12 rounded-full"
-            onClick={() => setIsVideoOff(!isVideoOff)}
+            onClick={() => {
+              if (localStream) {
+                localStream.getVideoTracks().forEach((t) => (t.enabled = isVideoOff));
+              }
+              setIsVideoOff(!isVideoOff);
+            }}
           >
             {isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
           </Button>
 
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-12 w-12 rounded-full"
-          >
+          {/* Screen share placeholder */}
+          <Button variant="secondary" size="icon" className="h-12 w-12 rounded-full">
             <Monitor className="h-5 w-5" />
           </Button>
 
+          {/* Chat */}
           <Button
             variant={showChat ? "default" : "secondary"}
             size="icon"
@@ -307,6 +374,7 @@ const Meeting = () => {
             <MessageSquare className="h-5 w-5" />
           </Button>
 
+          {/* Participants */}
           <Button
             variant={showParticipants ? "default" : "secondary"}
             size="icon"
@@ -316,14 +384,12 @@ const Meeting = () => {
             <Users className="h-5 w-5" />
           </Button>
 
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-12 w-12 rounded-full"
-          >
+          {/* More options */}
+          <Button variant="secondary" size="icon" className="h-12 w-12 rounded-full">
             <MoreVertical className="h-5 w-5" />
           </Button>
 
+          {/* Leave */}
           <Button
             variant="destructive"
             size="icon"
