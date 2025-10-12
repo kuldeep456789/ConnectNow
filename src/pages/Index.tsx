@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -61,7 +60,6 @@ const Index: React.FC = () => {
     });
     navigate("/auth");
   };
-
   return (
     <div className="min-h-screen gradient-hero">
       {/* ===== NAVBAR ===== */}
@@ -69,12 +67,15 @@ const Index: React.FC = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <Video className="h-8 w-8 text-accent" />
-            <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-              ConnectNow
-            </h1>
-          </div>
+            {/* <Video className="h-8 w-8 text-accent" /> */}
+            <h1
+  className="text-3xl tracking-tight uppercase bg-gradient-to-b from-gray-500 via-gray-600- to-gray-300 bg-clip-text text-transparent drop-shadow-[0_2px_2px_rgba(0,0,0,0.25)] italic"
+  style={{ fontFamily: '"Anton", sans-serif' }}
+>
+  ConnectNow
+</h1>
 
+          </div>
           {/* Desktop Menu */}
           <div className="hidden md:flex gap-3">
             <Button variant="outline" onClick={() => navigate("/auth")}>

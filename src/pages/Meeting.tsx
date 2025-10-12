@@ -8,7 +8,6 @@ import {
   Monitor, MessageSquare, Users, MoreVertical 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
 const Meeting = () => {
   const { meetingId } = useParams();
   const navigate = useNavigate();
@@ -20,12 +19,10 @@ const Meeting = () => {
   const [showParticipants, setShowParticipants] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
-
   useEffect(() => {
     const checkUser = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        
         if (error) {
           console.error("Session error:", error);
           toast({
@@ -52,9 +49,7 @@ const Meeting = () => {
         navigate("/auth");
       }
     };
-
     checkUser();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         toast({
@@ -66,14 +61,11 @@ const Meeting = () => {
         setUser(session.user);
       }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
-
   // Load messages and subscribe to realtime updates
   useEffect(() => {
     if (!user || !meetingId) return;
-
     // Load existing messages
     const loadMessages = async () => {
       const { data, error } = await supabase
@@ -88,9 +80,7 @@ const Meeting = () => {
         setMessages(data || []);
       }
     };
-
     loadMessages();
-
     // Subscribe to new messages
     const channel = supabase
       .channel(`meeting-${meetingId}`)
@@ -112,7 +102,6 @@ const Meeting = () => {
       supabase.removeChannel(channel);
     };
   }, [user, meetingId]);
-
   const handleLeave = () => {
     toast({
       title: "Left meeting",

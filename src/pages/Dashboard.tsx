@@ -64,12 +64,10 @@ const Dashboard = () => {
     await supabase.auth.signOut();
     navigate("/");
   };
-
   const createMeeting = () => {
     const meetingId = Math.random().toString(36).substring(2, 10);
     navigate(`/meeting/${meetingId}`);
   };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center gradient-hero">
@@ -77,17 +75,18 @@ const Dashboard = () => {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen gradient-hero">
       <header className="glass-card border-b border-border/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Video className="h-6 w-6 text-accent" />
-            <h1 className="text-xl font-bold gradient-primary bg-clip-text text-transparent">
-              ConnectNow
-            </h1>
-          </div>
+            <h1 className="text-5xl font-bebas bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">
+  ConnectNow
+</h1>
+
+
+                </div> 
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {user?.email}
@@ -116,7 +115,6 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
             </Card>
-
             <Card className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth">
               <CardHeader>
                 <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
@@ -140,7 +138,6 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
             </Card>
-
             <Card 
               className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth"
               onClick={() => setShowScreenShare(true)}
@@ -156,7 +153,6 @@ const Dashboard = () => {
               </CardHeader>
             </Card>
           </div>
-
           <div>
             <h3 className="text-xl font-semibold mb-4">Recent Meetings</h3>
             <Card className="glass-card shadow-card">
@@ -180,5 +176,4 @@ const Dashboard = () => {
     </div>
   );
 };
-
 export default Dashboard;
