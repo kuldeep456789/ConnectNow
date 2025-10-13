@@ -9,8 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
-// ✅ Backend base URL (Flask)
-const BACKEND_URL = "http://localhost:5000"; // change if hosted
+const BACKEND_URL = "http://localhost:5000";
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -22,12 +21,10 @@ const Index: React.FC = () => {
     return saved === "true";
   });
 
-  // Save menu state persistently
   useEffect(() => {
     localStorage.setItem("menuOpen", String(menuOpen));
   }, [menuOpen]);
 
-  // ✅ Auto redirect if user is authenticated
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -41,10 +38,10 @@ const Index: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // ✅ Create new meeting -> backend -> navigate to room
+  // ✅ Fixed: Use POST instead of GET
   const handleCreateMeeting = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/create-meeting`);
+      const response = await axios.post(`${BACKEND_URL}/create-meeting`);
       const meetingId = response.data.meetingId;
 
       toast({
@@ -63,7 +60,6 @@ const Index: React.FC = () => {
     }
   };
 
-  // ✅ Join existing meeting
   const handleJoinMeeting = async () => {
     if (!meetingCode.trim()) {
       toast({
@@ -90,7 +86,6 @@ const Index: React.FC = () => {
             </h1>
           </div>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex gap-3">
             <Button variant="outline" onClick={() => navigate("/auth")}>
               Sign In
@@ -99,8 +94,6 @@ const Index: React.FC = () => {
               Get Started
             </Button>
           </div>
-
-          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Button variant="ghost" size="icon" onClick={() => setMenuOpen(true)} aria-label="Open menu">
               <Menu className="h-6 w-6 text-accent" />
@@ -109,7 +102,6 @@ const Index: React.FC = () => {
         </div>
       </nav>
 
-      {/* ===== MOBILE SIDE DRAWER ===== */}
       <AnimatePresence>
         {menuOpen && (
           <>
@@ -135,7 +127,6 @@ const Index: React.FC = () => {
                   <X className="h-6 w-6 text-accent" />
                 </Button>
               </div>
-
               <div className="flex flex-col gap-4">
                 <Button
                   variant="outline"
@@ -156,7 +147,6 @@ const Index: React.FC = () => {
                   Get Started
                 </Button>
               </div>
-
               <div className="mt-auto pt-6 border-t border-border/30 text-sm text-muted-foreground">
                 <p>© 2025 ConnectNow</p>
               </div>
@@ -165,7 +155,6 @@ const Index: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* ===== HERO SECTION ===== */}
       <section className="container mx-auto px-4 py-32 md:py-40 text-center">
         <div className="max-w-4xl mx-auto animate-fade-in">
           <h2
@@ -188,7 +177,6 @@ const Index: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-700"></div>
           </div>
 
-          {/* ✅ Meeting Controls */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button size="lg" className="gradient-accent shadow-glow text-lg px-8 py-6" onClick={handleCreateMeeting}>
               <Video className="mr-2 h-5 w-5" />
@@ -208,7 +196,6 @@ const Index: React.FC = () => {
             </div>
           </div>
 
-          {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-16">
             <Card className="glass-card shadow-card hover:shadow-glow transition-smooth">
               <CardHeader>
@@ -221,7 +208,6 @@ const Index: React.FC = () => {
                 </CardDescription>
               </CardHeader>
             </Card>
-
             <Card className="glass-card shadow-card hover:shadow-glow transition-smooth">
               <CardHeader>
                 <div className="h-14 w-14 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
@@ -233,7 +219,6 @@ const Index: React.FC = () => {
                 </CardDescription>
               </CardHeader>
             </Card>
-
             <Card className="glass-card shadow-card hover:shadow-glow transition-smooth">
               <CardHeader>
                 <div className="h-14 w-14 rounded-xl bg-accent/20 flex items-center justify-center mb-4">
@@ -249,7 +234,6 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      {/* ===== CTA SECTION ===== */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-3xl mx-auto">
           <h3 className="text-3xl font-bold mb-6">Ready to connect?</h3>

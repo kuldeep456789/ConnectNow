@@ -18,13 +18,11 @@ const Dashboard = () => {
     const checkUser = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        
         if (error) {
           console.error("Session error:", error);
           navigate("/auth");
           return;
         }
-        
         if (!session) {
           toast({
             title: "Authentication Required",
@@ -64,10 +62,26 @@ const Dashboard = () => {
     await supabase.auth.signOut();
     navigate("/");
   };
-  const createMeeting = () => {
-    const meetingId = Math.random().toString(36).substring(2, 10);
-    navigate(`/meeting/${meetingId}`);
+
+  const createMeeting = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/create-meeting", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+      });
+      if (!response.ok) throw new Error("Server error");
+      const { meetingId } = await response.json();
+      navigate(`/meeting/${meetingId}`);
+    } catch (err) {
+      toast({
+        title: "Server Error",
+        description: "Unable to create meeting. Please check backend connection.",
+        variant: "destructive",
+      });
+    }
   };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center gradient-hero">
@@ -75,6 +89,7 @@ const Dashboard = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen gradient-hero">
       <header className="glass-card border-b border-border/50 sticky top-0 z-50">
@@ -82,11 +97,9 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
             <Video className="h-6 w-6 text-accent" />
             <h1 className="text-5xl font-bebas bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">
-  ConnectNow
-</h1>
-
-
-                </div> 
+              ConnectNow
+            </h1>          
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {user?.email}
@@ -101,7 +114,13 @@ const Dashboard = () => {
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-5xl mx-auto animate-fade-in">
-          <h2 className="text-3xl font-bold mb-8">Your Dashboard</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold">Your Dashboard</h2>
+            <Button onClick={createMeeting} size="lg" className="gradient-accent shadow-glow">
+              <Plus className="h-5 w-5 mr-2" />
+              Create Meeting
+            </Button>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <Card className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth" onClick={createMeeting}>
@@ -176,4 +195,5 @@ const Dashboard = () => {
     </div>
   );
 };
+
 export default Dashboard;
