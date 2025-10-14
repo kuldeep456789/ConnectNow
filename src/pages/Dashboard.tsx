@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Video, Plus, Calendar, LogOut, Link2, Monitor } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScreenShareDialog } from "@/components/ScreenShareDialog";
 
 const Dashboard = () => {
@@ -12,83 +13,65 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const [showJoinDialog, setShowJoinDialog] = useState(false);
+  const [meetingIdInput, setMeetingIdInput] = useState("");
+  const [codeInput, setCodeInput] = useState("");
   const [showScreenShare, setShowScreenShare] = useState(false);
 
+  // ✅ Authentication
   useEffect(() => {
     const checkUser = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Session error:", error);
-          navigate("/auth");
-          return;
-        }
-        if (!session) {
-          toast({
-            title: "Authentication Required",
-            description: "Please sign in to access the dashboard",
-            variant: "destructive",
-          });
-          navigate("/auth");
-        } else {
-          setUser(session.user);
-        }
-      } catch (err) {
-        console.error("Auth check error:", err);
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        toast({ title: "Auth Required", description: "Sign in to continue", variant: "destructive" });
         navigate("/auth");
-      } finally {
-        setLoading(false);
-      }
+      } else setUser(session.user);
+      setLoading(false);
     };
 
     checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        toast({
-          title: "Session Expired",
-          description: "Please sign in again",
-        });
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
+  // ✅ Sign out
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
 
+  // ✅ Create meeting
   const createMeeting = async () => {
     try {
-      const response = await fetch("http://localhost:5000/create-meeting", {
+      const res = await fetch("http://localhost:5000/create-meeting", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include"
+        credentials: "include",
       });
-      if (!response.ok) throw new Error("Server error");
-      const { meetingId } = await response.json();
-      navigate(`/meeting/${meetingId}`);
+      const data = await res.json();
+      navigate(`/meeting/${data.meetingId}`);
     } catch (err) {
-      toast({
-        title: "Server Error",
-        description: "Unable to create meeting. Please check backend connection.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to create meeting", variant: "destructive" });
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center gradient-hero">
-        <div className="animate-glow">Loading...</div>
-      </div>
-    );
-  }
+  // ✅ Join via link/code
+  const joinMeeting = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/join-meeting", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meetingId: meetingIdInput, code: codeInput }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to join");
+      navigate(`/meeting/${data.meetingId}`);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="min-h-screen gradient-hero">
@@ -98,100 +81,70 @@ const Dashboard = () => {
             <Video className="h-6 w-6 text-accent" />
             <h1 className="text-5xl font-bebas bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 bg-clip-text text-transparent">
               ConnectNow
-            </h1>          
+            </h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {user?.email}
-            </span>
+            <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              <LogOut className="h-4 w-4 mr-2" /> Sign Out
             </Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        <div className="max-w-5xl mx-auto animate-fade-in">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Your Dashboard</h2>
-            <Button onClick={createMeeting} size="lg" className="gradient-accent shadow-glow">
-              <Plus className="h-5 w-5 mr-2" />
-              Create Meeting
-            </Button>
-          </div>
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {/* Create Meeting */}
+          <Card className="glass-card cursor-pointer hover:shadow-lg transition" onClick={createMeeting}>
+            <CardHeader>
+              <div className="h-12 w-12 rounded-xl gradient-accent flex items-center justify-center mb-4">
+                <Plus className="h-6 w-6 text-white" />
+              </div>
+              <CardTitle>Create Meeting</CardTitle>
+              <CardDescription>Start a new meeting instantly</CardDescription>
+            </CardHeader>
+          </Card>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <Card className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth" onClick={createMeeting}>
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl gradient-accent flex items-center justify-center mb-4">
-                  <Video className="h-6 w-6 text-background" />
-                </div>
-                <CardTitle>Start Instant Meeting</CardTitle>
-                <CardDescription>
-                  Create a meeting instantly and invite others
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
-                  <Calendar className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle>Schedule Meeting</CardTitle>
-                <CardDescription>
-                  Plan a meeting for later with calendar integration
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          {/* Join via Link */}
+          <Card className="glass-card cursor-pointer hover:shadow-lg transition" onClick={() => setShowJoinDialog(true)}>
+            <CardHeader>
+              <div className="h-12 w-12 rounded-xl bg-accent/20 flex items-center justify-center mb-4">
+                <Link2 className="h-6 w-6 text-accent" />
+              </div>
+              <CardTitle>Join via Link</CardTitle>
+              <CardDescription>Enter meeting ID & code to join securely</CardDescription>
+            </CardHeader>
+          </Card>
 
-            <Card className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-accent/20 flex items-center justify-center mb-4">
-                  <Link2 className="h-6 w-6 text-accent" />
-                </div>
-                <CardTitle>Join via Link</CardTitle>
-                <CardDescription>
-                  Enter a meeting code to join an existing meeting
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card 
-              className="glass-card shadow-card cursor-pointer hover:shadow-glow transition-smooth"
-              onClick={() => setShowScreenShare(true)}
-            >
-              <CardHeader>
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
-                  <Monitor className="h-6 w-6 text-white" />
-                </div>
-                <CardTitle>Secure Screen Share</CardTitle>
-                <CardDescription>
-                  Share your screen with a secure key or join another's screen
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold mb-4">Recent Meetings</h3>
-            <Card className="glass-card shadow-card">
-              <CardContent className="py-12">
-                <div className="text-center text-muted-foreground">
-                  <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No recent meetings</p>
-                  <p className="text-sm mt-2">Start your first meeting to see it here</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Screen Share */}
+          <Card className="glass-card cursor-pointer hover:shadow-lg transition" onClick={() => setShowScreenShare(true)}>
+            <CardHeader>
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
+                <Monitor className="h-6 w-6 text-white" />
+              </div>
+              <CardTitle>Secure Screen Share</CardTitle>
+              <CardDescription>Share your screen safely with participants</CardDescription>
+            </CardHeader>
+          </Card>
         </div>
       </main>
 
-      <ScreenShareDialog 
-        open={showScreenShare}
-        onOpenChange={setShowScreenShare}
-        user={user}
-      />
+      {/* Join Dialog */}
+      {showJoinDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-background p-6 rounded-lg w-80 flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">Join Meeting</h3>
+            <Input placeholder="Meeting ID" value={meetingIdInput} onChange={(e) => setMeetingIdInput(e.target.value)} />
+            <Input placeholder="Secure Code" value={codeInput} onChange={(e) => setCodeInput(e.target.value)} />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowJoinDialog(false)}>Cancel</Button>
+              <Button onClick={joinMeeting}>Join</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ScreenShareDialog open={showScreenShare} onOpenChange={setShowScreenShare} user={user} />
     </div>
   );
 };
