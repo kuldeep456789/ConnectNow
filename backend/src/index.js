@@ -29,9 +29,7 @@ app.use('/api/meetings', meetingRoutes);
 app.use('/api/engagement', engagementRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+app.get('/health', (req, res) => res.json({ ok: true }));
 
 // Track both active users and their socket IDs
 const activeUsers = {};
@@ -44,95 +42,85 @@ io.on('connection', (socket) => {
   // Join meeting room
   socket.on('join-room', (meetingId, userId) => {
     socket.join(meetingId);
-    
-    // Initialize room if needed
-    if (!activeUsers[meetingId]) {
-      activeUsers[meetingId] = new Set();
-    }
+    if (!activeUsers[meetingId]) activeUsers[meetingId] = new Set();
     activeUsers[meetingId].add(userId);
-    userSockets.set(socket.id, userId); // Track this socket's userId
-    
+    userSockets.set(socket.id, userId);
+
     console.log(`📍 ${userId} joined room ${meetingId} (Total: ${activeUsers[meetingId].size})`);
-    
-    // Notify others in the room that someone joined
     socket.to(meetingId).emit('user-joined', userId);
-    
-    // Send list of existing users to the new joiner
+
     const existingUsers = Array.from(activeUsers[meetingId]).filter(id => id !== userId);
     socket.emit('existing-users', existingUsers);
   });
 
-  // Handle offer (point-to-point)
+  // Signaling handlers (plain JS params)
   socket.on('offer', ({ target, sender, sdp }) => {
     io.to(target).emit('offer', { sender, sdp });
   });
 
-  // Handle answer (point-to-point)
   socket.on('answer', ({ target, sender, sdp }) => {
     io.to(target).emit('answer', { sender, sdp });
   });
 
-  // Handle ICE candidate (point-to-point)
   socket.on('candidate', ({ target, sender, candidate }) => {
     io.to(target).emit('candidate', { sender, candidate });
   });
 
-  // Screen sharing - offer (point-to-point)
+  // Screen sharing signaling
   socket.on('offer-screen', ({ target, sender, sdp }) => {
     io.to(target).emit('offer-screen', { sender, sdp });
   });
 
-  // Screen sharing - answer (point-to-point)
   socket.on('answer-screen', ({ target, sender, sdp }) => {
     io.to(target).emit('answer-screen', { sender, sdp });
   });
 
-  // Screen sharing - ICE candidate (point-to-point)
   socket.on('candidate-screen', ({ target, sender, candidate }) => {
     io.to(target).emit('candidate-screen', { sender, candidate });
   });
 
-  // Stop screen share (broadcast to room)
   socket.on('stop-screen-share', (meetingId, userId) => {
     socket.to(meetingId).emit('screen-share-stopped', userId);
     console.log(`🛑 Screen share stopped by ${userId} in room ${meetingId}`);
   });
 
-  // User left room
+  // User leaves room
   socket.on('leave-room', (meetingId, userId) => {
     socket.leave(meetingId);
-    
+
     if (activeUsers[meetingId]) {
       activeUsers[meetingId].delete(userId);
-      userSockets.delete(socket.id); // Remove this socket's mapping
       if (activeUsers[meetingId].size === 0) {
         delete activeUsers[meetingId];
       }
     }
-    
+
+    userSockets.delete(socket.id);
     console.log(`👋 ${userId} left room ${meetingId}`);
     socket.to(meetingId).emit('user-left', userId);
   });
 
-  // Engagement data update
+  // Engagement update
   socket.on('engagement-update', (meetingId, engagementData) => {
     socket.to(meetingId).emit('engagement-update', engagementData);
   });
 
-  // Coaching suggestion
-  socket.on('coaching-suggestion', (meetingId, suggestion) => {
-    socket.to(meetingId).emit('coaching-suggestion', suggestion);
-  });
-
-  // Disconnect
+  // Clean up on disconnect
   socket.on('disconnect', () => {
-    console.log('❌ User disconnected:', socket.id);
-    
-    // Clean up user from all rooms
-    for (const meetingId in activeUsers) {
-      // Note: We don't have userId here, but Socket.io will auto-leave rooms
-      socket.leave(meetingId);
+    const uid = userSockets.get(socket.id);
+    if (uid) {
+      // remove socket mapping
+      userSockets.delete(socket.id);
+      // remove from all rooms it's in
+      for (const [roomId, set] of Object.entries(activeUsers)) {
+        if (set.has(uid)) {
+          set.delete(uid);
+          socket.to(roomId).emit('user-left', uid);
+          if (set.size === 0) delete activeUsers[roomId];
+        }
+      }
     }
+    console.log('❌ User disconnected:', socket.id);
   });
 });
 
@@ -143,12 +131,5 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════╗
-║  🚀 ConnectNow Server Running          ║
-║  Port: ${PORT}                               ║
-║  Environment: ${process.env.NODE_ENV || 'development'}          ║
-╚════════════════════════════════════════╝
-  `);
-});
+app.get('/health', (req, res) => res.json({ ok: true }));
+server.listen(PORT, () => console.log(`Server running on ${PORT}`));

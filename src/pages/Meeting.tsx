@@ -40,12 +40,11 @@ const Meeting = () => {
   const [meetingCode, setMeetingCode] = useState<string | null>(null);
   const [showSharePanel, setShowSharePanel] = useState(false);
 
+  const streamRef = useRef<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const peersRef = useRef<{ [id: string]: RTCPeerConnection }>({});
   const screenPeersRef = useRef<{ [key: string]: RTCPeerConnection }>({});
-  // Add ref to store and reuse the stream
-  const streamRef = useRef<MediaStream | null>(null);
 
   // ✅ Check authentication
   useEffect(() => {
@@ -100,147 +99,43 @@ const Meeting = () => {
 
     const initializeMedia = async () => {
       try {
-        // Only get new stream if we don't have one
+        // Acquire and reuse local stream only once
         if (!streamRef.current) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true,
-          });
-          streamRef.current = stream;
-          setLocalStream(stream);
-
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
+          const constraints: MediaStreamConstraints = { video: true, audio: true };
+          const s = await navigator.mediaDevices.getUserMedia(constraints);
+          streamRef.current = s;
+          setLocalStream(s);
+          if (localVideoRef.current) localVideoRef.current.srcObject = s;
         }
 
-        socket.emit("join-room", meetingId, user.id);
-
-        // New participant joined
-        socket.on("user-joined", (userId: string) => {
-          const peer = createPeer(userId, socket.id, streamRef.current!);
-          peersRef.current[userId] = peer;
-        });
-
-        // Offer from others
-        socket.on("offer", async ({ sdp, sender }) => {
-          const peer = await createAnswerPeer(sender, streamRef.current!, sdp);
-          peersRef.current[sender] = peer;
-        });
-
-        // Answer received
-        socket.on("answer", async ({ sdp, sender }) => {
-          const peer = peersRef.current[sender];
-          if (peer)
-            await peer.setRemoteDescription(new RTCSessionDescription(sdp));
-        });
-
-        // ICE candidates
-        socket.on("candidate", async ({ candidate, sender }) => {
-          const peer = peersRef.current[sender];
-          if (peer) await peer.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-
-        // Participant left
-        socket.on("user-left", (userId: string) => {
-          if (peersRef.current[userId]) peersRef.current[userId].close();
-          delete peersRef.current[userId];
-          setRemoteStreams((prev) => {
-            const updated = { ...prev };
-            delete updated[userId];
-            return updated;
-          });
-        });
-
-        // ========================
-        // Screen sharing events
-        // ========================
-        socket.on("offer-screen", async ({ sdp, sender }) => {
-          try {
-            const peer = new RTCPeerConnection(RTC_CONFIG);
-            screenPeersRef.current[sender] = peer;
-
-            peer.ontrack = (e) => {
-              console.log("🖥️ Screen track received from", sender);
-              setScreenStreams((prev) => ({ ...prev, [sender]: e.streams[0] }));
-            };
-
-            peer.onicecandidate = (e) => {
-              if (e.candidate)
-                socket.emit("candidate-screen", {
-                  target: sender,
-                  sender: user.id,
-                  candidate: e.candidate,
-                });
-            };
-
-            await peer.setRemoteDescription(new RTCSessionDescription(sdp));
-            const answer = await peer.createAnswer();
-            await peer.setLocalDescription(answer);
-            console.log("📤 Sending screen answer to", sender);
-            socket.emit("answer-screen", {
-              target: sender,
-              sender: user.id,
-              sdp: answer,
-            });
-          } catch (err) {
-            console.error("❌ Error handling screen share offer:", err);
-          }
-        });
-
-        socket.on("answer-screen", async ({ sdp, sender }) => {
-          const peer = screenPeersRef.current[sender];
-          if (peer) {
-            try {
-              await peer.setRemoteDescription(new RTCSessionDescription(sdp));
-              console.log("📤 Screen answer received from", sender);
-            } catch (err) {
-              console.error(
-                "❌ Error setting remote description for screen:",
-                err,
-              );
-            }
-          }
-        });
-
-        socket.on("candidate-screen", async ({ candidate, sender }) => {
-          const peer = screenPeersRef.current[sender];
-          if (peer) {
-            try {
-              await peer.addIceCandidate(new RTCIceCandidate(candidate));
-            } catch (err) {
-              console.error("❌ Error adding ICE candidate for screen:", err);
-            }
-          }
-        });
-
-        socket.on("screen-share-stopped", () => {
-          console.log("Screen share stopped by other user");
-        });
-      } catch (err) {
+        socket.emit('join-room', meetingId, user.id);
+      } catch (err: any) {
+        // Detailed error logging
+        console.error('getUserMedia error', err?.name, err?.message || err);
         toast({
-          title: "Media Error",
-          description: "Please allow camera and mic permissions",
-          variant: "destructive",
+          title: 'Camera / Microphone Error',
+          description: `Could not access media devices: ${err?.message || err}`,
+          variant: 'destructive',
         });
-        console.error(err);
       }
     };
 
     initializeMedia();
 
-    // Cleanup function
     return () => {
+      // Stop tracks and release devices
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
+        streamRef.current.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
+        setLocalStream(null);
       }
 
-      socket.emit("leave-room", meetingId, user.id);
-      Object.values(peersRef.current).forEach((p) => p.close());
+      // Close all peer connections
+      Object.values(peersRef.current).forEach((p) => {
+        try { p.close(); } catch { /* noop */ }
+      });
       peersRef.current = {};
+      socket.emit('leave-room', meetingId, user.id);
     };
   }, [user, meetingId, toast]);
 
@@ -369,12 +264,7 @@ const Meeting = () => {
       Object.values(screenPeersRef.current).forEach((p) => p.close());
       screenPeersRef.current = {};
       setIsScreenSharing(false);
-      socket.emit("stop-screen-share", meetingId);
-      toast({
-        title: "Screen Sharing",
-        description: "Screen share stopped",
-        variant: "default",
-      });
+      socket.emit("stop-screen-share", meetingId, user.id);
       return;
     }
 
@@ -430,14 +320,12 @@ const Meeting = () => {
         screenPeersRef.current = {};
       };
     } catch (err: any) {
-      if (err.name !== "NotAllowedError") {
-        console.error("❌ Screen share error:", err);
-        toast({
-          title: "Screen Share Error",
-          description: "Failed to start screen sharing",
-          variant: "destructive",
-        });
-      }
+      console.error('getDisplayMedia error', err?.name, err?.message || err);
+      toast({
+        title: 'Screen Share Error',
+        description: `Could not start screen share: ${err?.message || err}`,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -445,16 +333,14 @@ const Meeting = () => {
   // Leave meeting
   // -------------------------
   const handleLeave = () => {
-    // Stop all tracks before navigating
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        track.stop();
-      });
+      streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
-
-    socket.emit("leave-room", meetingId, user?.id);
-    navigate("/dashboard");
+    Object.values(peersRef.current).forEach((p) => { try { p.close(); } catch {} });
+    peersRef.current = {};
+    socket.emit('leave-room', meetingId, user?.id);
+    navigate('/dashboard');
   };
 
   // -------------------------
@@ -732,3 +618,19 @@ const Meeting = () => {
 };
 
 export default Meeting;
+
+// Ensure helper acquires/reuses streams
+async function acquireLocalStream(constraints: MediaStreamConstraints) {
+  try {
+    if (!streamRef.current) {
+      const s = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = s;
+      // If component still mounted, set state / attach to video element
+      // (setLocalStream is available in component scope)
+    }
+    return streamRef.current;
+  } catch (err: any) {
+    console.error('getUserMedia error', err?.name, err?.message || err);
+    throw err;
+  }
+}
