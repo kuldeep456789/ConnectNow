@@ -4,7 +4,17 @@ import { api } from "@/integrations/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Video, ArrowRight, Lock, Mail, User, Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Video,
+  ArrowRight,
+  Lock,
+  Mail,
+  User,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 const Auth = () => {
@@ -43,7 +53,7 @@ const Auth = () => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!email || !password) {
       toast({
@@ -78,15 +88,16 @@ const Auth = () => {
         }
 
         await api.register(email, password, fullName);
-        
+
         toast({
           title: "Account Created!",
-          description: "Your account has been created successfully. You are now signed in.",
+          description:
+            "Your account has been created successfully. You are now signed in.",
         });
         navigate("/dashboard");
       } else {
         await api.login(email, password);
-        
+
         toast({
           title: "Welcome back!",
           description: "Successfully signed in",
@@ -94,7 +105,10 @@ const Auth = () => {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "An error occurred. Please try again.";
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "An error occurred. Please try again.";
       toast({
         variant: "destructive",
         title: isSignUp ? "Sign Up Failed" : "Sign In Failed",
@@ -129,7 +143,9 @@ const Auth = () => {
           </div>
 
           <p className="text-center text-muted-foreground text-sm mb-8">
-            {isSignUp ? "Create your account to get started" : "Welcome back to your account"}
+            {isSignUp
+              ? "Create your account to get started"
+              : "Welcome back to your account"}
           </p>
 
           <h2 className="text-2xl font-bold mb-8 text-center">
@@ -188,7 +204,11 @@ const Auth = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
 
@@ -200,13 +220,24 @@ const Auth = () => {
                 className="space-y-2"
               >
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-muted-foreground">Password Strength</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Password Strength
+                  </span>
                   <span className="text-xs font-semibold text-muted-foreground">
-                    {passwordStrength() <= 1 ? "Weak" : passwordStrength() === 2 ? "Fair" : passwordStrength() === 3 ? "Good" : "Strong"}
+                    {passwordStrength() <= 1
+                      ? "Weak"
+                      : passwordStrength() === 2
+                        ? "Fair"
+                        : passwordStrength() === 3
+                          ? "Good"
+                          : "Strong"}
                   </span>
                 </div>
                 <div className="h-1 bg-secondary/50 rounded-full overflow-hidden">
-                  <div className={`h-full ${getPasswordColor()} transition-all duration-300`} style={{ width: `${(passwordStrength() / 4) * 100}%` }}></div>
+                  <div
+                    className={`h-full ${getPasswordColor()} transition-all duration-300`}
+                    style={{ width: `${(passwordStrength() / 4) * 100}%` }}
+                  ></div>
                 </div>
               </motion.div>
             )}
@@ -261,9 +292,13 @@ const Auth = () => {
           <p className="text-center text-xs text-muted-foreground mt-8">
             By signing in, you agree to our
             <br />
-            <button className="text-accent hover:underline">Terms of Service</button>
+            <button className="text-accent hover:underline">
+              Terms of Service
+            </button>
             {" and "}
-            <button className="text-accent hover:underline">Privacy Policy</button>
+            <button className="text-accent hover:underline">
+              Privacy Policy
+            </button>
           </p>
         </div>
       </motion.div>

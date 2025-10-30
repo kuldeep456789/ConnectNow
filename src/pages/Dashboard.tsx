@@ -2,10 +2,26 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/integrations/api/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Video, Plus, Calendar, LogOut, Link2, Monitor, ArrowRight, Copy, Check, Users } from "lucide-react";
+import {
+  Video,
+  Plus,
+  Calendar,
+  LogOut,
+  Link2,
+  Monitor,
+  ArrowRight,
+  Copy,
+  Check,
+  Users,
+} from "lucide-react";
 import { ScreenShareDialog } from "@/components/ScreenShareDialog";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,7 +40,11 @@ const Dashboard = () => {
   useEffect(() => {
     const checkUser = async () => {
       if (!api.isAuthenticated()) {
-        toast({ title: "Auth Required", description: "Sign in to continue", variant: "destructive" });
+        toast({
+          title: "Auth Required",
+          description: "Sign in to continue",
+          variant: "destructive",
+        });
         navigate("/auth");
         return;
       }
@@ -33,7 +53,11 @@ const Dashboard = () => {
         const currentUser = await api.getCurrentUser();
         setUser(currentUser);
       } catch (error) {
-        toast({ title: "Auth Error", description: "Failed to load user", variant: "destructive" });
+        toast({
+          title: "Auth Error",
+          description: "Failed to load user",
+          variant: "destructive",
+        });
         navigate("/auth");
       } finally {
         setLoading(false);
@@ -55,8 +79,13 @@ const Dashboard = () => {
       const data = await api.createMeeting("New Meeting");
       navigate(`/meeting/${data.meetingId}`);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || "Failed to create meeting";
-      toast({ title: "Error", description: errorMessage, variant: "destructive" });
+      const errorMessage =
+        err.response?.data?.error || "Failed to create meeting";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -64,14 +93,23 @@ const Dashboard = () => {
   const joinMeeting = async () => {
     try {
       if (!meetingIdInput || !codeInput) {
-        toast({ title: "Error", description: "Please enter meeting ID and code", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: "Please enter meeting ID and code",
+          variant: "destructive",
+        });
         return;
       }
       const data = await api.joinMeeting(meetingIdInput, codeInput);
       navigate(`/meeting/${data.meetingId}`);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || "Failed to join meeting";
-      toast({ title: "Error", description: errorMessage, variant: "destructive" });
+      const errorMessage =
+        err.response?.data?.error || err.message || "Failed to join meeting";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -128,12 +166,16 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-sm font-medium">{user?.full_name || "User"}</span>
-              <span className="text-xs text-muted-foreground">{user?.email}</span>
+              <span className="text-sm font-medium">
+                {user?.full_name || "User"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {user?.email}
+              </span>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleSignOut}
               className="hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
@@ -153,9 +195,15 @@ const Dashboard = () => {
           className="mb-16"
         >
           <h2 className="text-4xl font-bold mb-2">
-            Welcome back, <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">{user?.full_name?.split(' ')[0] || "User"}</span>
+            Welcome back,{" "}
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              {user?.full_name?.split(" ")[0] || "User"}
+            </span>
           </h2>
-          <p className="text-muted-foreground text-lg">Start a meeting or join an existing one to collaborate with your team</p>
+          <p className="text-muted-foreground text-lg">
+            Start a meeting or join an existing one to collaborate with your
+            team
+          </p>
         </motion.div>
 
         {/* Quick Actions Grid */}
@@ -173,21 +221,26 @@ const Dashboard = () => {
               >
                 <Card className="glass-card shadow-card hover:shadow-glow transition-all hover:-translate-y-1 h-full">
                   <CardHeader>
-                    <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`h-12 w-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                    >
                       <Icon className="h-6 w-6 text-white" />
                     </div>
-                    <CardTitle className="text-xl font-semibold group-hover:text-accent transition-colors">{card.title}</CardTitle>
+                    <CardTitle className="text-xl font-semibold group-hover:text-accent transition-colors">
+                      {card.title}
+                    </CardTitle>
                     <CardDescription className="text-base text-muted-foreground">
                       {card.description}
                     </CardDescription>
                   </CardHeader>
                   <div className="px-6 pb-6">
-                    <Button 
+                    <Button
                       className="w-full group-hover:gap-3 transition-all"
                       variant="secondary"
                       size="sm"
                     >
-                      Get Started <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                      Get Started{" "}
+                      <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </Card>
@@ -211,7 +264,8 @@ const Dashboard = () => {
                 <CardTitle>Team Collaboration</CardTitle>
               </div>
               <CardDescription>
-                Invite participants, share screens, and collaborate seamlessly with your team in real-time.
+                Invite participants, share screens, and collaborate seamlessly
+                with your team in real-time.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -223,7 +277,8 @@ const Dashboard = () => {
                 <CardTitle>Schedule Meetings</CardTitle>
               </div>
               <CardDescription>
-                Schedule meetings for later and send invitation links to your team members instantly.
+                Schedule meetings for later and send invitation links to your
+                team members instantly.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -247,32 +302,34 @@ const Dashboard = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl font-bold mb-2">Join Meeting</h3>
-            <p className="text-muted-foreground mb-6">Enter your meeting details below</p>
-            
+            <p className="text-muted-foreground mb-6">
+              Enter your meeting details below
+            </p>
+
             <div className="space-y-4 mb-6">
-              <Input 
-                placeholder="Meeting ID" 
-                value={meetingIdInput} 
+              <Input
+                placeholder="Meeting ID"
+                value={meetingIdInput}
                 onChange={(e) => setMeetingIdInput(e.target.value)}
                 className="bg-secondary/50 border-border/50 text-base"
               />
-              <Input 
-                placeholder="Secure Code" 
-                value={codeInput} 
+              <Input
+                placeholder="Secure Code"
+                value={codeInput}
                 onChange={(e) => setCodeInput(e.target.value)}
                 className="bg-secondary/50 border-border/50 text-base"
               />
             </div>
 
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowJoinDialog(false)}
                 className="px-6"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={joinMeeting}
                 className="gradient-accent shadow-glow text-white px-6 font-semibold"
               >
@@ -283,7 +340,11 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      <ScreenShareDialog open={showScreenShare} onOpenChange={setShowScreenShare} user={user} />
+      <ScreenShareDialog
+        open={showScreenShare}
+        onOpenChange={setShowScreenShare}
+        user={user}
+      />
     </div>
   );
 };

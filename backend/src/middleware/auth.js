@@ -1,16 +1,6 @@
-import { Request, Response, NextFunction } from "express";
 import { extractToken, verifyToken } from "../utils/auth.js";
 
-export interface AuthenticatedRequest extends Request {
-  userId?: string;
-  email?: string;
-}
-
-export function authMiddleware(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction,
-) {
+export function authMiddleware(req, res, next) {
   const token = extractToken(req.headers.authorization);
 
   if (!token) {
@@ -29,11 +19,7 @@ export function authMiddleware(
   next();
 }
 
-export function optionalAuthMiddleware(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction,
-) {
+export function optionalAuthMiddleware(req, res, next) {
   const token = extractToken(req.headers.authorization);
 
   if (token) {

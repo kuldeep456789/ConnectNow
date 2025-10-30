@@ -1,27 +1,34 @@
 # Meeting ID & Secure Code Implementation Guide
 
 ## Overview
+
 This document describes the fixed meeting creation, joining, and sharing system in ConnectNow.
 
 ## Fixed Issues
 
 ### 1. ✅ Connection Errors - WebSocket Port Configuration
+
 **Issue**: WebSocket was trying to connect to port 8080 instead of 5000
 **Fix**:
+
 - Frontend (Vite): Configured to run on port 8080 ✓
 - Backend: Runs on port 5000 ✓
 - Frontend env variable: `VITE_SOCKET_URL=http://localhost:5000` ✓
 
 ### 2. ✅ Authentication Token in WebSocket
+
 **Issue**: WebSocket connection lacked authentication
 **Fix**:
+
 - Updated `src/lib/socket.ts` to pass auth token from localStorage
 - Socket now includes: `auth: { token }` in connection options
 - Added debug logging for connection events
 
 ### 3. ✅ Meeting Sharing Information
+
 **Issue**: Users couldn't easily share meeting details with others
 **Fix**:
+
 - Created `src/lib/meeting-utils.ts` with:
   - `generateSecureCode()` - Creates 8-char alphanumeric codes
   - `generateMeetingId()` - Creates UUID v4 IDs
@@ -31,8 +38,10 @@ This document describes the fixed meeting creation, joining, and sharing system 
 - Added Share panel to Meeting page with copy buttons
 
 ### 4. ✅ Multi-User Room Joining
+
 **Issue**: Multiple users couldn't properly join the same meeting room
 **Fix**:
+
 - Backend properly handles room joining via `join-room` event
 - Socket.io broadcasts user-joined events to all participants
 - Meeting participants are tracked in database
@@ -41,6 +50,7 @@ This document describes the fixed meeting creation, joining, and sharing system 
 ## System Architecture
 
 ### Meeting Creation Flow
+
 ```
 User clicks "Create Meeting"
     ↓
@@ -61,6 +71,7 @@ Frontend:
 ```
 
 ### Meeting Joining Flow
+
 ```
 User enters Meeting ID & Secure Code
     ↓
@@ -81,6 +92,7 @@ Frontend:
 ```
 
 ### Real-Time Communication
+
 ```
 User joins meeting
     ↓
@@ -100,6 +112,7 @@ Video/audio streams established
 ## Usage Instructions
 
 ### For Meeting Creator:
+
 1. Click **"Create Meeting"** on Dashboard
 2. You'll be taken to the meeting room
 3. Click **"Share"** button in header
@@ -111,6 +124,7 @@ Video/audio streams established
 5. Share any of these details with others
 
 ### For Meeting Participants:
+
 1. On Dashboard, click **"Join via Link"**
 2. Enter the Meeting ID and Security Code
 3. Click **"Join Meeting"**
@@ -118,6 +132,7 @@ Video/audio streams established
 5. Your camera and microphone will be active
 
 ### Meeting Controls:
+
 - **Mic Button**: Toggle microphone on/off
 - **Camera Button**: Toggle camera on/off
 - **Screen Share**: Share your screen with participants
@@ -127,6 +142,7 @@ Video/audio streams established
 ## File Structure
 
 ### New/Modified Files
+
 ```
 src/
 ├── lib/
@@ -149,6 +165,7 @@ backend/
 ## Database Schema
 
 ### Meetings Table
+
 ```sql
 CREATE TABLE meetings (
   id UUID PRIMARY KEY,
@@ -163,6 +180,7 @@ CREATE TABLE meetings (
 ```
 
 ### Meeting Participants Table
+
 ```sql
 CREATE TABLE meeting_participants (
   id UUID PRIMARY KEY,
@@ -185,6 +203,7 @@ CREATE TABLE meeting_participants (
 ## Example Meeting Details
 
 When you create a meeting, you get:
+
 ```json
 {
   "meetingId": "550e8400-e29b-41d4-a716-446655440000",
@@ -194,6 +213,7 @@ When you create a meeting, you get:
 ```
 
 To share with others:
+
 - **Meeting ID**: 550e8400-e29b-41d4-a716-446655440000
 - **Security Code**: ABC12XYZ
 - **Join Link**: http://localhost:8080/meeting/550e8400-e29b-41d4-a716-446655440000
@@ -201,6 +221,7 @@ To share with others:
 ## Testing the Implementation
 
 ### Manual Testing Checklist:
+
 - [ ] Create a meeting and see Share button
 - [ ] Copy Meeting ID, Code, and Link
 - [ ] Open new browser tab/window (or incognito)
@@ -211,7 +232,9 @@ To share with others:
 - [ ] Original creator can see new participants join
 
 ### For Developers:
+
 1. Backend logs show:
+
    ```
    ✅ User connected: [socket-id]
    📍 [user-id] joined room [meeting-id]
@@ -227,21 +250,25 @@ To share with others:
 ## Troubleshooting
 
 ### "WebSocket connection failed"
+
 - Check backend is running on port 5000
 - Check frontend env: `VITE_SOCKET_URL=http://localhost:5000`
 - Check browser console for CORS errors
 
 ### "Invalid meeting code"
+
 - Verify code matches exactly (case-sensitive)
 - Check meeting hasn't ended
 - Ensure meeting ID and code are from the same meeting
 
 ### "No participants visible"
+
 - Check camera/mic permissions granted
 - Ensure other user clicked "Create Meeting" first
 - Wait 2-3 seconds for connection to establish
 
 ### "Permission denied for camera/mic"
+
 - Grant browser permissions when prompted
 - Check system privacy settings
 - Try different camera/mic in Settings

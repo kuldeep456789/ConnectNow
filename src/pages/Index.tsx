@@ -1,10 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Video, Users, Shield, Sparkles, Menu, X, ArrowRight, CheckCircle2, Zap } from "lucide-react";
+import {
+  Video,
+  Users,
+  Shield,
+  Sparkles,
+  Menu,
+  X,
+  ArrowRight,
+  CheckCircle2,
+  Zap,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { api } from "@/integrations/api/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,7 +53,8 @@ const Index: React.FC = () => {
       const data = await api.createMeeting("New Meeting");
       navigate(`/meeting/${data.meetingId}`);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || "Unable to create meeting";
+      const errorMessage =
+        err.response?.data?.error || "Unable to create meeting";
       toast({
         title: "Error",
         description: errorMessage,
@@ -63,20 +79,23 @@ const Index: React.FC = () => {
     {
       icon: Users,
       title: "Unlimited Participants",
-      description: "Host meetings with unlimited participants, no time limits or restrictions.",
-      color: "from-blue-500 to-cyan-500"
+      description:
+        "Host meetings with unlimited participants, no time limits or restrictions.",
+      color: "from-blue-500 to-cyan-500",
     },
     {
       icon: Shield,
       title: "Enterprise Security",
-      description: "End-to-end encryption, JWT authentication, and host controls for secure meetings.",
-      color: "from-purple-500 to-pink-500"
+      description:
+        "End-to-end encryption, JWT authentication, and host controls for secure meetings.",
+      color: "from-purple-500 to-pink-500",
     },
     {
       icon: Sparkles,
       title: "AI-Powered Features",
-      description: "Meeting summaries, live subtitles, noise cancellation, and smart backgrounds.",
-      color: "from-orange-500 to-red-500"
+      description:
+        "Meeting summaries, live subtitles, noise cancellation, and smart backgrounds.",
+      color: "from-orange-500 to-red-500",
     },
   ];
 
@@ -98,14 +117,14 @@ const Index: React.FC = () => {
           </div>
 
           <div className="hidden md:flex gap-3">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="hover:bg-secondary/50 transition-colors"
               onClick={() => navigate("/auth")}
             >
               Sign In
             </Button>
-            <Button 
+            <Button
               className="gradient-accent shadow-glow text-white font-semibold px-6 hover:shadow-xl transition-all"
               onClick={() => navigate("/auth")}
             >
@@ -113,7 +132,12 @@ const Index: React.FC = () => {
             </Button>
           </div>
           <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setMenuOpen(true)} aria-label="Open menu">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+            >
               <Menu className="h-6 w-6 text-accent" />
             </Button>
           </div>
@@ -141,7 +165,12 @@ const Index: React.FC = () => {
                 <h2 className="text-xl font-semibold gradient-primary bg-clip-text text-transparent">
                   Menu
                 </h2>
-                <Button variant="ghost" size="icon" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close menu"
+                >
                   <X className="h-6 w-6 text-accent" />
                 </Button>
               </div>
@@ -196,8 +225,9 @@ const Index: React.FC = () => {
               <span className="text-foreground">Collaborate with Purpose</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Enterprise-grade video conferencing powered by cutting-edge technology. 
-              Connect with anyone, anywhere, with crystal-clear audio and video.
+              Enterprise-grade video conferencing powered by cutting-edge
+              technology. Connect with anyone, anywhere, with crystal-clear
+              audio and video.
             </p>
           </motion.div>
 
@@ -208,8 +238,8 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="gradient-accent shadow-glow text-white font-semibold px-8 py-7 text-lg hover:shadow-xl transition-all group"
               onClick={handleCreateMeeting}
             >
@@ -224,9 +254,9 @@ const Index: React.FC = () => {
                 onKeyDown={(e) => e.key === "Enter" && handleJoinMeeting()}
                 className="bg-secondary/50 border-border/50 px-4 py-3 text-base"
               />
-              <Button 
-                size="lg" 
-                variant="outline" 
+              <Button
+                size="lg"
+                variant="outline"
                 onClick={handleJoinMeeting}
                 className="font-semibold px-6 hover:bg-secondary/50 transition-colors"
               >
@@ -265,10 +295,14 @@ const Index: React.FC = () => {
                 >
                   <Card className="glass-card shadow-card hover:shadow-glow transition-all hover:-translate-y-1 cursor-default h-full">
                     <CardHeader>
-                      <div className={`h-14 w-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                      <div
+                        className={`h-14 w-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                      >
                         <Icon className="h-7 w-7 text-white" />
                       </div>
-                      <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl font-semibold">
+                        {feature.title}
+                      </CardTitle>
                       <CardDescription className="text-base text-muted-foreground">
                         {feature.description}
                       </CardDescription>
@@ -296,19 +330,20 @@ const Index: React.FC = () => {
             </span>
           </h3>
           <p className="text-lg text-muted-foreground mb-10">
-            Join teams worldwide using ConnectNow for seamless, secure, and productive meetings.
+            Join teams worldwide using ConnectNow for seamless, secure, and
+            productive meetings.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="gradient-accent shadow-glow text-white font-semibold px-8 py-6 text-base hover:shadow-xl transition-all"
               onClick={() => navigate("/auth")}
             >
               Start Free Now <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="font-semibold px-8 py-6 text-base hover:bg-secondary/50 transition-colors"
               onClick={() => navigate("/auth")}
             >

@@ -7,12 +7,14 @@ Successfully migrated ConnectNow from Supabase to Neon PostgreSQL with a product
 ### What Changed
 
 #### ❌ Removed
+
 - Supabase authentication client (`@supabase/supabase-js`)
 - Supabase database connection
 - Supabase auth state management
 - Supabase Postgrest queries
 
 #### ✅ Added
+
 - Express.js backend server (port 5000)
 - Neon PostgreSQL integration
 - JWT-based authentication
@@ -135,6 +137,7 @@ backend/
 ## 🔐 Authentication Flow
 
 ### Before (Supabase)
+
 ```
 User Input
     ↓
@@ -144,6 +147,7 @@ Session stored in browser
 ```
 
 ### After (Neon + JWT)
+
 ```
 User Input
     ↓
@@ -163,6 +167,7 @@ Token sent with every API request (Authorization: Bearer <token>)
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 # Backend
 cd backend && npm install
@@ -172,6 +177,7 @@ cd .. && npm install
 ```
 
 ### 2. Setup Databases
+
 ```bash
 cd backend
 npm run db:migrate    # Create tables
@@ -179,6 +185,7 @@ npm run db:seed       # Optional: Add sample data
 ```
 
 ### 3. Start Servers
+
 ```bash
 # Terminal 1 - Backend
 cd backend && npm run dev
@@ -188,6 +195,7 @@ npm run dev
 ```
 
 ### 4. Test
+
 - Open `http://localhost:8080`
 - Register new account
 - Create meeting
@@ -198,34 +206,38 @@ npm run dev
 ## 📊 API Comparison
 
 ### Authentication
-| Function | Supabase | Neon |
-|----------|----------|------|
-| Register | `supabase.auth.signUp()` | `POST /api/auth/register` |
-| Login | `supabase.auth.signInWithPassword()` | `POST /api/auth/login` |
-| Check Auth | `supabase.auth.getSession()` | Token check in localStorage |
-| Logout | `supabase.auth.signOut()` | Clear localStorage |
+
+| Function   | Supabase                             | Neon                        |
+| ---------- | ------------------------------------ | --------------------------- |
+| Register   | `supabase.auth.signUp()`             | `POST /api/auth/register`   |
+| Login      | `supabase.auth.signInWithPassword()` | `POST /api/auth/login`      |
+| Check Auth | `supabase.auth.getSession()`         | Token check in localStorage |
+| Logout     | `supabase.auth.signOut()`            | Clear localStorage          |
 
 ### Meetings
-| Function | Supabase | Neon |
-|----------|----------|------|
-| Create | Custom endpoint | `POST /api/meetings/create-meeting` |
-| Join | Custom endpoint | `POST /api/meetings/join-meeting` |
-| Get Details | Postgrest | `GET /api/meetings/meeting/:id` |
-| List | Postgrest | `GET /api/meetings/my-meetings` |
+
+| Function    | Supabase        | Neon                                |
+| ----------- | --------------- | ----------------------------------- |
+| Create      | Custom endpoint | `POST /api/meetings/create-meeting` |
+| Join        | Custom endpoint | `POST /api/meetings/join-meeting`   |
+| Get Details | Postgrest       | `GET /api/meetings/meeting/:id`     |
+| List        | Postgrest       | `GET /api/meetings/my-meetings`     |
 
 ### Engagement
-| Function | Supabase | Neon |
-|----------|----------|------|
-| Record Score | Insert query | `POST /api/engagement/record` |
-| Get Data | Select query | `GET /api/engagement/meeting/:id` |
-| Coaching | Insert query | `POST /api/engagement/coaching/suggest` |
-| Badges | Insert query | `POST /api/engagement/gamification/award-badge` |
+
+| Function     | Supabase     | Neon                                            |
+| ------------ | ------------ | ----------------------------------------------- |
+| Record Score | Insert query | `POST /api/engagement/record`                   |
+| Get Data     | Select query | `GET /api/engagement/meeting/:id`               |
+| Coaching     | Insert query | `POST /api/engagement/coaching/suggest`         |
+| Badges       | Insert query | `POST /api/engagement/gamification/award-badge` |
 
 ---
 
 ## 🔧 Environment Configuration
 
 ### Backend (.env)
+
 ```env
 DATABASE_URL=postgresql://neondb_owner:...@ep-...pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
 PORT=5000
@@ -235,6 +247,7 @@ JWT_SECRET=your-secret-key-here
 ```
 
 ### Frontend (.env)
+
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
@@ -264,24 +277,30 @@ VITE_SOCKET_URL=http://localhost:5000
 ## 🚨 Common Issues & Fixes
 
 ### Issue: "DATABASE_URL not set"
+
 **Cause**: Missing backend/.env file
 **Fix**: Copy your Neon URL to backend/.env
 
 ### Issue: CORS errors in browser
+
 **Cause**: FRONTEND_URL mismatch
 **Fix**: Ensure backend FRONTEND_URL = http://localhost:8080
 
 ### Issue: "Invalid or expired token"
+
 **Cause**: JWT_SECRET changed or token corrupted
 **Fix**: Clear localStorage, re-login
 
 ### Issue: Cannot create meeting
+
 **Cause**: Backend not running or not authenticated
-**Fix**: 
+**Fix**:
+
 1. Start backend: `cd backend && npm run dev`
 2. Check authentication: Ensure you're logged in
 
 ### Issue: Database connection fails
+
 **Cause**: Neon connection string invalid
 **Fix**: Verify SSL mode and channel_binding in connection string
 
@@ -289,32 +308,35 @@ VITE_SOCKET_URL=http://localhost:5000
 
 ## 📈 Performance Improvements
 
-| Aspect | Supabase | Neon |
-|--------|----------|------|
-| Database | PostgreSQL (managed) | PostgreSQL (managed) |
-| Auth | OAuth + sessions | JWT tokens |
-| Queries | REST (Postgrest) | Custom REST API |
-| Latency | ~100-200ms | ~50-100ms |
-| Scalability | Auto-scaling | Manual scaling |
-| Cost | $25+/month | $15/month + usage |
+| Aspect      | Supabase             | Neon                 |
+| ----------- | -------------------- | -------------------- |
+| Database    | PostgreSQL (managed) | PostgreSQL (managed) |
+| Auth        | OAuth + sessions     | JWT tokens           |
+| Queries     | REST (Postgrest)     | Custom REST API      |
+| Latency     | ~100-200ms           | ~50-100ms            |
+| Scalability | Auto-scaling         | Manual scaling       |
+| Cost        | $25+/month           | $15/month + usage    |
 
 ---
 
 ## 🔮 Future Enhancements
 
 ### Phase 2: AI Integration
+
 - [ ] MediaPipe facial expression analysis
 - [ ] GazeTracking for attention metrics
 - [ ] Speech sentiment analysis
 - [ ] Real-time engagement scoring
 
 ### Phase 3: Advanced Features
+
 - [ ] Meeting recordings
 - [ ] Transcription with timestamps
 - [ ] Automatic meeting summaries
 - [ ] Emotion analytics dashboard
 
 ### Phase 4: Enterprise
+
 - [ ] Multi-team support
 - [ ] SSO integration
 - [ ] Audit logs
@@ -335,16 +357,19 @@ VITE_SOCKET_URL=http://localhost:5000
 ## 📞 Support
 
 ### Backend Issues
+
 - Check `server.log` for errors
 - Verify `.env` variables
 - Test database connection with `psql` command
 
 ### Frontend Issues
+
 - Check browser console for errors
 - Verify API URL in network tab
 - Check localStorage for auth token
 
 ### Database Issues
+
 - Test Neon connection in query editor
 - Check connection pool settings
 - Review SSL certificate requirements
@@ -354,6 +379,7 @@ VITE_SOCKET_URL=http://localhost:5000
 ## 📄 Files Status
 
 ### Migrated (Supabase → Neon)
+
 - ✅ Authentication system
 - ✅ Meeting management
 - ✅ Engagement tracking
@@ -361,6 +387,7 @@ VITE_SOCKET_URL=http://localhost:5000
 - ✅ Screen sharing (partial - key generation local)
 
 ### Preserved (No Changes Needed)
+
 - ✅ WebRTC implementation
 - ✅ Socket.io real-time events
 - ✅ UI components
@@ -368,6 +395,7 @@ VITE_SOCKET_URL=http://localhost:5000
 - ✅ Mobile responsiveness
 
 ### Deprecated (Keep for reference)
+
 - ⚠️ `src/integrations/supabase/` (no longer used)
 
 ---

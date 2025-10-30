@@ -26,12 +26,14 @@ ConnectNow is a production-level real-time video collaboration platform with AI-
 ### 1. Install Dependencies
 
 #### Frontend
+
 ```bash
 cd c:\Projects\connectNow
 npm install
 ```
 
 #### Backend
+
 ```bash
 cd c:\Projects\connectNow\backend
 npm install
@@ -40,6 +42,7 @@ npm install
 ### 2. Setup Environment Variables
 
 #### Backend (.env file)
+
 ```
 DATABASE_URL=postgresql://neondb_owner:npg_LI3n4cmTiGXe@ep-still-butterfly-ahhyl1ny-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 PORT=5000
@@ -49,6 +52,7 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production-12345
 ```
 
 #### Frontend (.env file)
+
 ```
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
@@ -64,6 +68,7 @@ npm run db:migrate
 ```
 
 This will create:
+
 - Users table with AI coach preferences
 - Meetings table with meeting management
 - Meeting participants tracking
@@ -76,12 +81,14 @@ This will create:
 ### 4. Start the Application
 
 #### Terminal 1 - Backend Server
+
 ```bash
 cd c:\Projects\connectNow\backend
 npm run dev
 ```
 
 Expected output:
+
 ```
 ╔════════════════════════════════════════╗
 ║  🚀 ConnectNow Server Running          ║
@@ -91,6 +98,7 @@ Expected output:
 ```
 
 #### Terminal 2 - Frontend Application
+
 ```bash
 cd c:\Projects\connectNow
 npm run dev
@@ -146,12 +154,14 @@ connectNow/
 ## 🔌 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Create new account
 - `POST /api/auth/login` - User login
 - `GET /api/auth/me` - Get current user
 - `PUT /api/auth/me` - Update user profile
 
 ### Meetings
+
 - `POST /api/meetings/create-meeting` - Create new meeting
 - `POST /api/meetings/join-meeting` - Join meeting with code
 - `GET /api/meetings/meeting/:meetingId` - Get meeting details
@@ -161,6 +171,7 @@ connectNow/
 - `GET /api/meetings/my-meetings` - Get user's meetings
 
 ### Engagement & Coaching
+
 - `POST /api/engagement/record` - Record engagement metrics
 - `GET /api/engagement/meeting/:meetingId` - Get meeting engagement data
 - `GET /api/engagement/user/:userId/stats` - Get user engagement stats
@@ -169,11 +180,13 @@ connectNow/
 - `PATCH /api/engagement/coaching/suggestion/:suggestionId/sent` - Mark suggestion as sent
 
 ### Gamification
+
 - `POST /api/engagement/gamification/award-badge` - Award badge to user
 - `GET /api/engagement/gamification/user/:userId/badges` - Get user's badges
 - `GET /api/engagement/gamification/user/:userId/points` - Get user's total points
 
 ### Analytics
+
 - `GET /api/engagement/analytics/meeting/:meetingId` - Get meeting analytics
 
 ---
@@ -192,6 +205,7 @@ connectNow/
 ## 📊 Database Schema
 
 ### Users
+
 ```sql
 - id (UUID)
 - email (VARCHAR, unique)
@@ -202,6 +216,7 @@ connectNow/
 ```
 
 ### Meetings
+
 ```sql
 - id (UUID)
 - creator_id (FK to users)
@@ -212,6 +227,7 @@ connectNow/
 ```
 
 ### Engagement Scores
+
 ```sql
 - id (UUID)
 - meeting_id (FK to meetings)
@@ -225,6 +241,7 @@ connectNow/
 ```
 
 ### Coaching Suggestions
+
 ```sql
 - id (UUID)
 - meeting_id (FK to meetings)
@@ -235,6 +252,7 @@ connectNow/
 ```
 
 ### User Badges
+
 ```sql
 - id (UUID)
 - user_id (FK to users)
@@ -248,6 +266,7 @@ connectNow/
 ## 🎮 Gamification System
 
 ### Available Badges
+
 1. **Active Listener** - Maintain eye contact, smile/nod while listening
 2. **Empathy Bonus** - React positively to others' comments
 3. **Collaboration Streak** - Group maintains ≥80% engagement for 10 min
@@ -256,6 +275,7 @@ connectNow/
 6. **Topic Captain** - Repeated positive reactions to specific topic
 
 ### Points System
+
 - Each badge awards configurable points
 - Points tracked per meeting and aggregated
 - Leaderboards available per meeting
@@ -265,6 +285,7 @@ connectNow/
 ## 🧠 AI Engagement Coaching
 
 ### Coach Personas
+
 1. **Zen Coach** - Gentle, mindfulness-focused reminders
    - "You seem distracted — maybe take a sip of water and refocus?"
 2. **Productivity Pro** - Data-driven feedback
@@ -273,6 +294,7 @@ connectNow/
    - "Great energy! 🎉 Keep it up!"
 
 ### Engagement Metrics
+
 - **Engagement Score** (0-100): Overall participation level
 - **Focus Stability Index**: How consistently engaged
 - **Turn-Taking Fairness**: Speaking vs. listening ratio
@@ -307,6 +329,7 @@ connectNow/
 All real-time communication happens via Socket.io:
 
 ### Client Events
+
 - `join-room` - Join meeting room
 - `offer`, `answer`, `candidate` - WebRTC signaling
 - `offer-screen`, `answer-screen`, `candidate-screen` - Screen sharing
@@ -315,6 +338,7 @@ All real-time communication happens via Socket.io:
 - `coaching-suggestion` - Send coaching suggestion
 
 ### Server Events
+
 - `user-joined` - New participant joined
 - `user-left` - Participant left
 - `offer`, `answer`, `candidate` - WebRTC responses
@@ -326,6 +350,7 @@ All real-time communication happens via Socket.io:
 ## 🚨 Error Handling
 
 ### Frontend (API Client)
+
 ```typescript
 try {
   const data = await api.createMeeting("My Meeting");
@@ -336,6 +361,7 @@ try {
 ```
 
 ### Backend (Express)
+
 - 400: Bad request (validation errors)
 - 401: Unauthorized (invalid/missing token)
 - 403: Forbidden (insufficient permissions)
@@ -376,24 +402,28 @@ try {
 ## 🐛 Troubleshooting
 
 ### Backend Won't Start
+
 ```
 Error: DATABASE_URL not set
 Solution: Check backend/.env file and DATABASE_URL value
 ```
 
 ### Frontend Can't Connect to Backend
+
 ```
 Error: CORS error in browser console
 Solution: Check FRONTEND_URL in backend/.env matches your frontend URL
 ```
 
 ### Authentication Not Working
+
 ```
 Error: "Invalid or expired token"
 Solution: Check JWT_SECRET is consistent, clear localStorage and re-login
 ```
 
 ### Database Migration Fails
+
 ```
 Error: "already exists" or connection errors
 Solution: Check Neon connection URL, ensure SSL is enabled

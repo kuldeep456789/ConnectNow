@@ -97,7 +97,6 @@ export default {
         "slide-in": "slide-in 0.3s ease-out",
         glow: "glow 2s ease-in-out infinite",
       },
-
     },
   },
   plugins: [require("tailwindcss-animate")],

@@ -4,7 +4,7 @@ export interface User {
   password_hash: string;
   full_name?: string;
   avatar_url?: string;
-  ai_coach_tone: 'zen' | 'productivity' | 'fun';
+  ai_coach_tone: "zen" | "productivity" | "fun";
   created_at: Date;
   updated_at: Date;
 }
@@ -55,7 +55,7 @@ export interface CoachingSuggestion {
   meeting_id: string;
   user_id: string;
   suggestion_text: string;
-  suggestion_type: 'private' | 'group';
+  suggestion_type: "private" | "group";
   ai_coach_tone?: string;
   is_sent: boolean;
   created_at: Date;
@@ -66,7 +66,13 @@ export interface UserBadge {
   id: string;
   user_id: string;
   meeting_id: string;
-  badge_type: 'active_listener' | 'empathy_bonus' | 'collaboration_streak' | 'flow_mode' | 'mood_boost' | 'topic_captain';
+  badge_type:
+    | "active_listener"
+    | "empathy_bonus"
+    | "collaboration_streak"
+    | "flow_mode"
+    | "mood_boost"
+    | "topic_captain";
   badge_name: string;
   badge_description?: string;
   points_earned: number;

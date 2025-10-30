@@ -10,7 +10,7 @@ ConnectNow is a real-time video conferencing application built with:
 
 ## Repository Structure
 
-````
+```
 connectNow/
 ├── src/                              # Frontend source code
 │   ├── pages/                        # Page components (Auth, Dashboard, Meeting)
@@ -35,10 +35,12 @@ connectNow/
 ├── tailwind.config.ts                # Tailwind CSS config
 ├── playwright.config.ts              # Playwright configuration
 └── package.json                      # Frontend dependencies
+```
 
 ## Key Technologies
 
 ### Frontend Stack
+
 - **Runtime**: Node.js 22+
 - **Build Tool**: Vite 7.1
 - **Framework**: React 18.3
@@ -51,6 +53,7 @@ connectNow/
 - **Icons**: Lucide React
 
 ### Backend Stack
+
 - **Runtime**: Node.js 22+
 - **Framework**: Express 4.18
 - **Real-time**: Socket.io 4.7
@@ -61,6 +64,7 @@ connectNow/
 - **Utilities**: uuid, dotenv, cors
 
 ### Testing
+
 - **Framework**: Playwright 1.x (latest)
 - **Test Runner**: Playwright CLI
 - **Browsers**: Chromium, Firefox, WebKit
@@ -69,6 +73,7 @@ connectNow/
 ## Development Workflow
 
 ### Running Locally
+
 ```bash
 # Terminal 1: Backend
 cd backend
@@ -76,7 +81,7 @@ npm run dev          # Starts on http://localhost:5000
 
 # Terminal 2: Frontend
 npm run dev          # Starts on http://localhost:8080
-````
+```
 
 ### Running Tests
 

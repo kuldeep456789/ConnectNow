@@ -1,28 +1,32 @@
-import { Router, Response } from 'express';
-import { query } from '../config/database.js';
-import { hashPassword, verifyPassword, generateToken } from '../utils/auth.js';
-import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
-import { User, AuthRequest, AuthResponse } from '../types/index.js';
+import { Router, Response } from "express";
+import { query } from "../config/database.js";
+import { hashPassword, verifyPassword, generateToken } from "../utils/auth.js";
+import { AuthenticatedRequest, authMiddleware } from "../middleware/auth.js";
+import { User, AuthRequest, AuthResponse } from "../types/index.js";
 
 const router = Router();
 
 // Register
-router.post('/register', async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { email, password, full_name }: AuthRequest = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 6 characters" });
     }
 
     // Check if user exists
-    const existingUser = await query('SELECT id FROM users WHERE email = $1', [email]);
+    const existingUser = await query("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
     if (existingUser.rows.length > 0) {
-      return res.status(409).json({ error: 'User already exists' });
+      return res.status(409).json({ error: "User already exists" });
     }
 
     // Hash password and create user
@@ -31,10 +35,10 @@ router.post('/register', async (req, res) => {
       `INSERT INTO users (email, password_hash, full_name, ai_coach_tone) 
        VALUES ($1, $2, $3, $4) 
        RETURNING id, email, full_name, ai_coach_tone, created_at`,
-      [email, password_hash, full_name || null, 'zen']
+      [email, password_hash, full_name || null, "zen"],
     );
 
-    const user = result.rows[0] as Omit<User, 'password_hash'>;
+    const user = result.rows[0] as Omit<User, "password_hash">;
     const token = generateToken(user.id, user.email);
 
     res.status(201).json({
@@ -47,24 +51,24 @@ router.post('/register', async (req, res) => {
       },
     } as AuthResponse);
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error("Registration error:", error);
+    res.status(500).json({ error: "Registration failed" });
   }
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password }: AuthRequest = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Find user
-    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
+    const result = await query("SELECT * FROM users WHERE email = $1", [email]);
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const user = result.rows[0] as User;
@@ -72,7 +76,7 @@ router.post('/login', async (req, res) => {
     // Verify password
     const isValid = await verifyPassword(password, user.password_hash);
     if (!isValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const token = generateToken(user.id, user.email);
@@ -87,56 +91,69 @@ router.post('/login', async (req, res) => {
       },
     } as AuthResponse);
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Login failed" });
   }
 });
 
 // Get current user
-router.get('/me', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const result = await query(
-      `SELECT id, email, full_name, avatar_url, ai_coach_tone, created_at, updated_at 
+router.get(
+  "/me",
+  authMiddleware,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const result = await query(
+        `SELECT id, email, full_name, avatar_url, ai_coach_tone, created_at, updated_at 
        FROM users WHERE id = $1`,
-      [req.userId]
-    );
+        [req.userId],
+      );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ error: "Failed to fetch user" });
     }
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ error: 'Failed to fetch user' });
-  }
-});
+  },
+);
 
 // Update user profile
-router.put('/me', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { full_name, avatar_url, ai_coach_tone } = req.body;
+router.put(
+  "/me",
+  authMiddleware,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { full_name, avatar_url, ai_coach_tone } = req.body;
 
-    const result = await query(
-      `UPDATE users 
+      const result = await query(
+        `UPDATE users 
        SET full_name = COALESCE($1, full_name), 
            avatar_url = COALESCE($2, avatar_url),
            ai_coach_tone = COALESCE($3, ai_coach_tone),
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $4
        RETURNING id, email, full_name, avatar_url, ai_coach_tone, created_at, updated_at`,
-      [full_name || null, avatar_url || null, ai_coach_tone || null, req.userId]
-    );
+        [
+          full_name || null,
+          avatar_url || null,
+          ai_coach_tone || null,
+          req.userId,
+        ],
+      );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ error: "Failed to update user" });
     }
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Update user error:', error);
-    res.status(500).json({ error: 'Failed to update user' });
-  }
-});
+  },
+);
 
 export default router;

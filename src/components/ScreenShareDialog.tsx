@@ -1,5 +1,11 @@
 import { useState, useRef } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +19,11 @@ interface ScreenShareDialogProps {
   user: any;
 }
 
-export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialogProps) => {
+export const ScreenShareDialog = ({
+  open,
+  onOpenChange,
+  user,
+}: ScreenShareDialogProps) => {
   const { toast } = useToast();
   const [generatedKey, setGeneratedKey] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -36,10 +46,17 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
       // await api.createScreenShare(meetingId, key);
 
       setGeneratedKey(key);
-      toast({ title: "Screen share created!", description: "Share the key with others" });
+      toast({
+        title: "Screen share created!",
+        description: "Share the key with others",
+      });
     } catch (error) {
       console.error("Error creating screen share:", error);
-      toast({ title: "Error", description: "Failed to create screen share", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to create screen share",
+        variant: "destructive",
+      });
     } finally {
       setIsCreating(false);
     }
@@ -48,7 +65,10 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
   // Copy key to clipboard
   const copyKey = () => {
     navigator.clipboard.writeText(generatedKey);
-    toast({ title: "Copied!", description: "Screen share key copied to clipboard" });
+    toast({
+      title: "Copied!",
+      description: "Screen share key copied to clipboard",
+    });
   };
 
   // Start your screen sharing
@@ -56,7 +76,10 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
     if (!generatedKey) return;
 
     try {
-      const stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true, audio: false });
+      const stream = await (navigator.mediaDevices as any).getDisplayMedia({
+        video: true,
+        audio: false,
+      });
       if (localScreenRef.current) localScreenRef.current.srcObject = stream;
 
       // Join room using share key
@@ -71,7 +94,8 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
       // Handle incoming answers
       socket.on("answer-screen", async ({ sdp, sender }) => {
         const peer = peersRef.current[sender];
-        if (peer) await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+        if (peer)
+          await peer.setRemoteDescription(new RTCSessionDescription(sdp));
       });
 
       // Handle ICE candidates
@@ -88,10 +112,17 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
         }
       });
 
-      toast({ title: "Screen share started", description: "Others can now join using your key" });
+      toast({
+        title: "Screen share started",
+        description: "Others can now join using your key",
+      });
     } catch (err) {
       console.error(err);
-      toast({ title: "Error", description: "Failed to start screen sharing", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to start screen sharing",
+        variant: "destructive",
+      });
     }
   };
 
@@ -118,7 +149,11 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
         const answer = await peer.createAnswer();
         await peer.setLocalDescription(answer);
 
-        socket.emit("answer-screen", { target: sender, sender: socket.id, sdp: answer });
+        socket.emit("answer-screen", {
+          target: sender,
+          sender: socket.id,
+          sdp: answer,
+        });
       });
 
       socket.on("candidate-screen", async ({ candidate, sender }) => {
@@ -131,7 +166,11 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
       toast({ title: "Connected!", description: "Connected to screen share" });
     } catch (error) {
       console.error(error);
-      toast({ title: "Error", description: "Failed to join screen share", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to join screen share",
+        variant: "destructive",
+      });
     }
   };
 
@@ -143,15 +182,22 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
 
     peer.onicecandidate = (e) => {
       if (e.candidate) {
-        socket.emit("candidate-screen", { target: userId, sender: socket.id, candidate: e.candidate });
+        socket.emit("candidate-screen", {
+          target: userId,
+          sender: socket.id,
+          candidate: e.candidate,
+        });
       }
     };
 
-    peer.createOffer()
-      .then((offer) => {
-        peer.setLocalDescription(offer);
-        socket.emit("offer-screen", { target: userId, sender: socket.id, sdp: offer });
+    peer.createOffer().then((offer) => {
+      peer.setLocalDescription(offer);
+      socket.emit("offer-screen", {
+        target: userId,
+        sender: socket.id,
+        sdp: offer,
       });
+    });
 
     return peer;
   };
@@ -174,7 +220,11 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
             <h3 className="text-sm font-semibold">Share Your Screen</h3>
             {generatedKey ? (
               <div className="flex gap-2">
-                <Input value={generatedKey} readOnly className="font-mono text-lg" />
+                <Input
+                  value={generatedKey}
+                  readOnly
+                  className="font-mono text-lg"
+                />
                 <Button onClick={copyKey} size="icon" variant="outline">
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -185,7 +235,11 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
                 {isCreating ? "Generating..." : "Generate Share Key"}
               </Button>
             )}
-            <video ref={localScreenRef} autoPlay className="mt-2 w-full h-48 bg-black" />
+            <video
+              ref={localScreenRef}
+              autoPlay
+              className="mt-2 w-full h-48 bg-black"
+            />
           </div>
 
           <div className="border-t border-border/50 pt-6 space-y-3">
@@ -202,7 +256,15 @@ export const ScreenShareDialog = ({ open, onOpenChange, user }: ScreenShareDialo
                 Join
               </Button>
             </div>
-            {remoteStream && <video autoPlay ref={(ref) => { if(ref) ref.srcObject = remoteStream }} className="mt-2 w-full h-48 bg-black" />}
+            {remoteStream && (
+              <video
+                autoPlay
+                ref={(ref) => {
+                  if (ref) ref.srcObject = remoteStream;
+                }}
+                className="mt-2 w-full h-48 bg-black"
+              />
+            )}
           </div>
         </div>
       </DialogContent>

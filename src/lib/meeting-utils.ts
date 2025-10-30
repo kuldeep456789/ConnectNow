@@ -2,7 +2,7 @@
  * Meeting utilities for generating and managing meeting IDs and secure codes
  */
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Generate a secure meeting code (8-character alphanumeric)
@@ -48,7 +48,7 @@ export interface MeetingShareInfo {
 export function createMeetingShareInfo(
   meetingId: string,
   secureCode: string,
-  baseUrl: string = window.location.origin
+  baseUrl: string = window.location.origin,
 ): MeetingShareInfo {
   return {
     meetingId,
@@ -83,16 +83,16 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return true;
     } else {
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.select();
-      const success = document.execCommand('copy');
+      const success = document.execCommand("copy");
       document.body.removeChild(textArea);
       return success;
     }
   } catch (err) {
-    console.error('Failed to copy to clipboard:', err);
+    console.error("Failed to copy to clipboard:", err);
     return false;
   }
 }
@@ -109,6 +109,7 @@ export function validateMeetingCode(code: string): boolean {
  * Validate meeting ID format (UUID v4)
  */
 export function validateMeetingId(id: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
 }

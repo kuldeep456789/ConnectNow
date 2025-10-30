@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 // Generate UUID v4
 function generateMeetingId() {
@@ -10,9 +10,9 @@ function generateSecureCode() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
-console.log('\n========================================');
-console.log('   TEST MEETING IDs AND SECURE CODES');
-console.log('========================================\n');
+console.log("\n========================================");
+console.log("   TEST MEETING IDs AND SECURE CODES");
+console.log("========================================\n");
 
 for (let i = 1; i <= 5; i++) {
   const meetingId = generateMeetingId();
