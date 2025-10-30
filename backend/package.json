@@ -1,12 +1,11 @@
 {
   "name": "connectnow-backend",
   "version": "1.0.0",
-  "type": "module",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "db:migrate": "node src/scripts/migrate.js",
-    "db:seed": "node src/utils/seed.js"
+    "dev": "node --watch src/index.js",
+    "build": "echo \"no build step\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
