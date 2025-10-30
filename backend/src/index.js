@@ -34,8 +34,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Store active users per room
+// Track both active users and their socket IDs
 const activeUsers = {};
+const userSockets = new Map(); // Track socket.id -> userId mapping
 
 // WebSocket connection
 io.on('connection', (socket) => {
@@ -50,6 +51,7 @@ io.on('connection', (socket) => {
       activeUsers[meetingId] = new Set();
     }
     activeUsers[meetingId].add(userId);
+    userSockets.set(socket.id, userId); // Track this socket's userId
     
     console.log(`📍 ${userId} joined room ${meetingId} (Total: ${activeUsers[meetingId].size})`);
     
@@ -103,6 +105,7 @@ io.on('connection', (socket) => {
     
     if (activeUsers[meetingId]) {
       activeUsers[meetingId].delete(userId);
+      userSockets.delete(socket.id); // Remove this socket's mapping
       if (activeUsers[meetingId].size === 0) {
         delete activeUsers[meetingId];
       }

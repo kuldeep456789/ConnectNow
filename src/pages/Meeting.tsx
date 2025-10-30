@@ -44,6 +44,8 @@ const Meeting = () => {
   const screenStreamRef = useRef<MediaStream | null>(null);
   const peersRef = useRef<{ [id: string]: RTCPeerConnection }>({});
   const screenPeersRef = useRef<{ [key: string]: RTCPeerConnection }>({});
+  // Add ref to store and reuse the stream
+  const streamRef = useRef<MediaStream | null>(null);
 
   // ✅ Check authentication
   useEffect(() => {
@@ -96,28 +98,33 @@ const Meeting = () => {
   useEffect(() => {
     if (!user || !meetingId) return;
 
-    let stream: MediaStream;
-
-    const start = async () => {
+    const initializeMedia = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        setLocalStream(stream);
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+        // Only get new stream if we don't have one
+        if (!streamRef.current) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+          });
+          streamRef.current = stream;
+          setLocalStream(stream);
+
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+          }
+        }
 
         socket.emit("join-room", meetingId, user.id);
 
         // New participant joined
         socket.on("user-joined", (userId: string) => {
-          const peer = createPeer(userId, socket.id, stream);
+          const peer = createPeer(userId, socket.id, streamRef.current!);
           peersRef.current[userId] = peer;
         });
 
         // Offer from others
         socket.on("offer", async ({ sdp, sender }) => {
-          const peer = await createAnswerPeer(sender, stream, sdp);
+          const peer = await createAnswerPeer(sender, streamRef.current!, sdp);
           peersRef.current[sender] = peer;
         });
 
@@ -220,23 +227,20 @@ const Meeting = () => {
       }
     };
 
-    start();
+    initializeMedia();
 
+    // Cleanup function
     return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        streamRef.current = null;
+      }
+
       socket.emit("leave-room", meetingId, user.id);
       Object.values(peersRef.current).forEach((p) => p.close());
-      Object.values(screenPeersRef.current).forEach((p) => p.close());
-      socket.off("user-joined");
-      socket.off("offer");
-      socket.off("answer");
-      socket.off("candidate");
-      socket.off("user-left");
-      socket.off("offer-screen");
-      socket.off("answer-screen");
-      socket.off("candidate-screen");
-      socket.off("screen-share-stopped");
-      stream?.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      peersRef.current = {};
     };
   }, [user, meetingId, toast]);
 
@@ -441,9 +445,15 @@ const Meeting = () => {
   // Leave meeting
   // -------------------------
   const handleLeave = () => {
+    // Stop all tracks before navigating
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop();
+      });
+      streamRef.current = null;
+    }
+
     socket.emit("leave-room", meetingId, user?.id);
-    localStream?.getTracks().forEach((t) => t.stop());
-    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     navigate("/dashboard");
   };
 
