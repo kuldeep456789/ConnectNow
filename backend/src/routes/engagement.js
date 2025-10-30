@@ -1,12 +1,11 @@
-import { Router, Response } from 'express';
+import { Router } from 'express';
 import { query } from '../config/database.js';
-import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
-import { EngagementScore, CoachingSuggestion, UserBadge } from '../types/index.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
 // Record engagement score
-router.post('/engagement/record', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/engagement/record', authMiddleware, async (req, res) => {
   try {
     const {
       meetingId,
@@ -63,7 +62,7 @@ router.post('/engagement/record', authMiddleware, async (req: AuthenticatedReque
 });
 
 // Get engagement scores for meeting
-router.get('/engagement/meeting/:meetingId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/engagement/meeting/:meetingId', authMiddleware, async (req, res) => {
   try {
     const { meetingId } = req.params;
 
@@ -84,7 +83,7 @@ router.get('/engagement/meeting/:meetingId', authMiddleware, async (req: Authent
 });
 
 // Get user's engagement stats
-router.get('/engagement/user/:userId/stats', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/engagement/user/:userId/stats', authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -108,7 +107,7 @@ router.get('/engagement/user/:userId/stats', authMiddleware, async (req: Authent
 });
 
 // Create coaching suggestion
-router.post('/coaching/suggest', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/coaching/suggest', authMiddleware, async (req, res) => {
   try {
     const { meetingId, target_user_id, suggestion_text, suggestion_type, ai_coach_tone } = req.body;
 
@@ -136,7 +135,7 @@ router.post('/coaching/suggest', authMiddleware, async (req: AuthenticatedReques
 });
 
 // Get pending suggestions for user
-router.get('/coaching/suggestions/:userId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/coaching/suggestions/:userId', authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -157,7 +156,7 @@ router.get('/coaching/suggestions/:userId', authMiddleware, async (req: Authenti
 });
 
 // Mark suggestion as sent
-router.patch('/coaching/suggestion/:suggestionId/sent', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/coaching/suggestion/:suggestionId/sent', authMiddleware, async (req, res) => {
   try {
     const { suggestionId } = req.params;
 
@@ -181,7 +180,7 @@ router.patch('/coaching/suggestion/:suggestionId/sent', authMiddleware, async (r
 });
 
 // Award badge to user
-router.post('/gamification/award-badge', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/gamification/award-badge', authMiddleware, async (req, res) => {
   try {
     const { user_id, meeting_id, badge_type, badge_name, badge_description, points_earned } = req.body;
 
@@ -227,7 +226,7 @@ router.post('/gamification/award-badge', authMiddleware, async (req: Authenticat
 });
 
 // Get user's badges
-router.get('/gamification/user/:userId/badges', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/gamification/user/:userId/badges', authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -248,7 +247,7 @@ router.get('/gamification/user/:userId/badges', authMiddleware, async (req: Auth
 });
 
 // Get user's total points
-router.get('/gamification/user/:userId/points', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/gamification/user/:userId/points', authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -271,7 +270,7 @@ router.get('/gamification/user/:userId/points', authMiddleware, async (req: Auth
 });
 
 // Get meeting analytics
-router.get('/analytics/meeting/:meetingId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/analytics/meeting/:meetingId', authMiddleware, async (req, res) => {
   try {
     const { meetingId } = req.params;
 

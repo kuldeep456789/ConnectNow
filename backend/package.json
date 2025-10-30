@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "db:migrate": "tsx src/scripts/migrate.ts",
-    "db:seed": "tsx src/utils/seed.ts"
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:migrate": "node src/scripts/migrate.js",
+    "db:seed": "node src/utils/seed.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -18,15 +17,5 @@
     "cors": "^2.8.5",
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.10.6",
-    "@types/pg": "^8.11.2",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/uuid": "^9.0.7",
-    "typescript": "^5.3.3",
-    "tsx": "^4.7.0"
   }
 }

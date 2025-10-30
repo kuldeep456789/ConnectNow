@@ -1,18 +1,16 @@
-import { Router, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import { Router } from 'express';
 import { query } from '../config/database.js';
-import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
-import { Meeting, MeetingParticipant } from '../types/index.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
 // Generate random meeting code
-function generateMeetingCode(): string {
+function generateMeetingCode() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
 // Create meeting
-router.post('/create-meeting', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/create-meeting', authMiddleware, async (req, res) => {
   try {
     const { title } = req.body;
     const meetingCode = generateMeetingCode();
@@ -24,7 +22,7 @@ router.post('/create-meeting', authMiddleware, async (req: AuthenticatedRequest,
       [req.userId, title || 'Meeting', meetingCode, true]
     );
 
-    const meeting = result.rows[0] as Meeting;
+    const meeting = result.rows[0];
 
     // Add creator as participant
     await query(
@@ -45,7 +43,7 @@ router.post('/create-meeting', authMiddleware, async (req: AuthenticatedRequest,
 });
 
 // Join meeting
-router.post('/join-meeting', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/join-meeting', authMiddleware, async (req, res) => {
   try {
     const { meetingId, code } = req.body;
 
@@ -96,7 +94,7 @@ router.post('/join-meeting', authMiddleware, async (req: AuthenticatedRequest, r
 });
 
 // Get meeting details
-router.get('/meeting/:meetingId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/meeting/:meetingId', authMiddleware, async (req, res) => {
   try {
     const { meetingId } = req.params;
 
@@ -122,7 +120,7 @@ router.get('/meeting/:meetingId', authMiddleware, async (req: AuthenticatedReque
 });
 
 // Get all participants in meeting
-router.get('/meeting/:meetingId/participants', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/meeting/:meetingId/participants', authMiddleware, async (req, res) => {
   try {
     const { meetingId } = req.params;
 
@@ -143,7 +141,7 @@ router.get('/meeting/:meetingId/participants', authMiddleware, async (req: Authe
 });
 
 // End meeting
-router.post('/meeting/:meetingId/end', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/meeting/:meetingId/end', authMiddleware, async (req, res) => {
   try {
     const { meetingId } = req.params;
 
@@ -183,7 +181,7 @@ router.post('/meeting/:meetingId/end', authMiddleware, async (req: Authenticated
 });
 
 // Leave meeting
-router.post('/meeting/:meetingId/leave', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/meeting/:meetingId/leave', authMiddleware, async (req, res) => {
   try {
     const { meetingId } = req.params;
 
@@ -202,7 +200,7 @@ router.post('/meeting/:meetingId/leave', authMiddleware, async (req: Authenticat
 });
 
 // Get user's meetings
-router.get('/my-meetings', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/my-meetings', authMiddleware, async (req, res) => {
   try {
     const result = await query(
       `SELECT m.id, m.creator_id, m.title, m.meeting_code, m.is_active, m.started_at, m.ended_at, m.created_at,

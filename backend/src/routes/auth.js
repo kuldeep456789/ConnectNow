@@ -1,15 +1,14 @@
-import { Router, Response } from 'express';
+import { Router } from 'express';
 import { query } from '../config/database.js';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth.js';
-import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
-import { User, AuthRequest, AuthResponse } from '../types/index.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, full_name }: AuthRequest = req.body;
+    const { email, password, full_name } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -34,7 +33,7 @@ router.post('/register', async (req, res) => {
       [email, password_hash, full_name || null, 'zen']
     );
 
-    const user = result.rows[0] as Omit<User, 'password_hash'>;
+    const user = result.rows[0];
     const token = generateToken(user.id, user.email);
 
     res.status(201).json({
@@ -45,7 +44,7 @@ router.post('/register', async (req, res) => {
         full_name: user.full_name,
         ai_coach_tone: user.ai_coach_tone,
       },
-    } as AuthResponse);
+    });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
@@ -55,7 +54,7 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password }: AuthRequest = req.body;
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -67,7 +66,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0] as User;
+    const user = result.rows[0];
 
     // Verify password
     const isValid = await verifyPassword(password, user.password_hash);
@@ -85,7 +84,7 @@ router.post('/login', async (req, res) => {
         full_name: user.full_name,
         ai_coach_tone: user.ai_coach_tone,
       },
-    } as AuthResponse);
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
@@ -93,7 +92,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Get current user
-router.get('/me', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/me', authMiddleware, async (req, res) => {
   try {
     const result = await query(
       `SELECT id, email, full_name, avatar_url, ai_coach_tone, created_at, updated_at 
@@ -113,7 +112,7 @@ router.get('/me', authMiddleware, async (req: AuthenticatedRequest, res: Respons
 });
 
 // Update user profile
-router.put('/me', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/me', authMiddleware, async (req, res) => {
   try {
     const { full_name, avatar_url, ai_coach_tone } = req.body;
 

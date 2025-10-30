@@ -6,8 +6,6 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import meetingRoutes from './routes/meetings.js';
 import engagementRoutes from './routes/engagement.js';
-import { authMiddleware } from './middleware/auth.js';
-import { query } from './config/database.js';
 
 dotenv.config();
 
@@ -137,7 +135,7 @@ io.on('connection', (socket) => {
 });
 
 // Error handling
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
