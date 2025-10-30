@@ -9,13 +9,16 @@
     "db:seed": "node src/utils/seed.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "pg": "^8.11.0",
-    "jsonwebtoken": "^9.0.0",
     "bcryptjs": "^2.4.3",
-    "dotenv": "^16.3.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.11.0",
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
   }
 }

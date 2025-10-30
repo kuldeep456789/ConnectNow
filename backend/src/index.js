@@ -77,28 +77,28 @@ io.on('connection', (socket) => {
   });
 
   // Screen sharing - offer (point-to-point)
-  socket.on('offer-screen', ({ target, sender, sdp }: { target: string; sender: string; sdp: string }) => {
+  socket.on('offer-screen', ({ target, sender, sdp }) => {
     io.to(target).emit('offer-screen', { sender, sdp });
   });
 
   // Screen sharing - answer (point-to-point)
-  socket.on('answer-screen', ({ target, sender, sdp }: { target: string; sender: string; sdp: string }) => {
+  socket.on('answer-screen', ({ target, sender, sdp }) => {
     io.to(target).emit('answer-screen', { sender, sdp });
   });
 
   // Screen sharing - ICE candidate (point-to-point)
-  socket.on('candidate-screen', ({ target, sender, candidate }: { target: string; sender: string; candidate: any }) => {
+  socket.on('candidate-screen', ({ target, sender, candidate }) => {
     io.to(target).emit('candidate-screen', { sender, candidate });
   });
 
   // Stop screen share (broadcast to room)
-  socket.on('stop-screen-share', (meetingId: string, userId: string) => {
+  socket.on('stop-screen-share', (meetingId, userId) => {
     socket.to(meetingId).emit('screen-share-stopped', userId);
     console.log(`🛑 Screen share stopped by ${userId} in room ${meetingId}`);
   });
 
   // User left room
-  socket.on('leave-room', (meetingId: string, userId: string) => {
+  socket.on('leave-room', (meetingId, userId) => {
     socket.leave(meetingId);
     
     if (activeUsers[meetingId]) {
@@ -113,12 +113,12 @@ io.on('connection', (socket) => {
   });
 
   // Engagement data update
-  socket.on('engagement-update', (meetingId: string, engagementData: any) => {
+  socket.on('engagement-update', (meetingId, engagementData) => {
     socket.to(meetingId).emit('engagement-update', engagementData);
   });
 
   // Coaching suggestion
-  socket.on('coaching-suggestion', (meetingId: string, suggestion: any) => {
+  socket.on('coaching-suggestion', (meetingId, suggestion) => {
     socket.to(meetingId).emit('coaching-suggestion', suggestion);
   });
 

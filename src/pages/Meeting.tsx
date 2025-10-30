@@ -376,7 +376,8 @@ const Meeting = () => {
 
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "always" },
+        // 'cursor' isn't present in some lib.dom typings — cast the constraint to any
+        video: ({ cursor: "always" } as any),
         audio: false,
       });
 
