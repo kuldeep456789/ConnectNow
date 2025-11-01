@@ -83,7 +83,7 @@ export const ScreenShareDialog = ({
       if (localScreenRef.current) localScreenRef.current.srcObject = stream;
 
       // Join room using share key
-      socket.emit("join-room", generatedKey, user.id);
+      socket.emit("join-room", { roomId: generatedKey, userId: user.id });
 
       // Listen for new participants
       socket.on("user-joined", (userId: string) => {
@@ -138,7 +138,7 @@ export const ScreenShareDialog = ({
       }
 
       // Join room using share key
-      socket.emit("join-room", joinKey.toUpperCase(), user.id);
+      socket.emit("join-room", { roomId: joinKey.toUpperCase(), userId: user.id });
 
       // Receive screen offer
       socket.on("offer-screen", async ({ sdp, sender }) => {

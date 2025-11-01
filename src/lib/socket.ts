@@ -1,21 +1,14 @@
 // src/lib/socket.ts
-import { io } from "socket.io-client";
+import { io as clientIO } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// Get token from localStorage and pass to socket
-const token = localStorage.getItem("auth_token") || "";
-
-export const socket = io(SOCKET_URL, {
-  auth: {
-    token,
-  },
-  transports: ["websocket", "polling"],
-  reconnection: true,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 10000,
-  reconnectionAttempts: 5,
-  upgrade: true,
+// connect to root namespace — do NOT pass a namespace string like "/some" unless server exposes it
+export const socket = clientIO(BACKEND, {
+  path: '/socket.io',
+  transports: ['polling','websocket'],
+  withCredentials: true,
+  autoConnect: true,
 });
 
 // Log connection events for debugging

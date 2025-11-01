@@ -20,8 +20,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { MeetingShareCard } from "@/components/MeetingShareCard";
+import axios from 'axios';
 
-const Meeting = () => {
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+export default function Meeting() {
+  // ensure you extract the param name that your route uses (e.g. /meeting/:meetingId)
   const { meetingId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -119,7 +123,7 @@ const Meeting = () => {
     (async () => {
       try {
         const stream = await acquireLocalStream(streamRef, { video: true, audio: true });
-        socket.emit('join-room', meetingId, user.id);
+        socket.emit("join-room", { roomId: meetingId, userId: user.id });
       } catch (err) {
         toast?.({ title: 'Media Error', description: err?.message || String(err), variant: 'destructive' });
       }
@@ -138,7 +142,7 @@ const Meeting = () => {
         try { p.close(); } catch {}
       });
       peersRef.current = {};
-      if (meetingId && user?.id) socket.emit('leave-room', meetingId, user.id);
+      if (meetingId) socket.emit("leave-room", { roomId: meetingId });
     };
 
     window.addEventListener('beforeunload', cleanup);
@@ -168,46 +172,48 @@ const Meeting = () => {
   };
 
   const createPeer = (
-    userId: string,
-    callerId: string,
+    targetSocketId: string,
     stream: MediaStream,
   ) => {
+    if (!meetingId) return null;
     try {
       const peer = new RTCPeerConnection(RTC_CONFIG);
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
-      peer.ontrack = (e) => {
-        console.log("📹 Track received from", userId);
-        setRemoteStreams((prev) => ({ ...prev, [userId]: e.streams[0] }));
+      peer.ontrack = (event) => {
+        const inbound = event.streams[0];
+        if (inbound) {
+          setRemoteStreams((prev) => ({ ...prev, [targetSocketId]: inbound }));
+        }
       };
 
-      peer.onicecandidate = (e) => {
-        if (e.candidate) {
-          console.log("🧊 ICE candidate to", userId);
+      peer.onicecandidate = (event) => {
+        if (event.candidate) {
           socket.emit("candidate", {
-            target: userId,
-            sender: callerId,
-            candidate: e.candidate,
+            roomId: meetingId,
+            target: targetSocketId,
+            candidate: event.candidate,
           });
         }
       };
 
-      peer.onicegatheringstatechange = () => {
-        console.log("ICE Gathering State:", peer.iceGatheringState);
-      };
-
       peer.onconnectionstatechange = () => {
-        console.log("Connection state with", userId, ":", peer.connectionState);
+        if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
+          setRemoteStreams((prev) => {
+            const next = { ...prev };
+            delete next[targetSocketId];
+            return next;
+          });
+        }
       };
 
       peer
         .createOffer()
-        .then((offer) => {
-          peer.setLocalDescription(offer);
-          console.log("📤 Sending offer to", userId);
+        .then(async (offer) => {
+          await peer.setLocalDescription(offer);
           socket.emit("offer", {
-            target: userId,
-            sender: callerId,
+            roomId: meetingId,
+            target: targetSocketId,
             sdp: offer,
           });
         })
@@ -218,55 +224,250 @@ const Meeting = () => {
       return peer;
     } catch (err) {
       console.error("❌ Error creating peer connection:", err);
-      throw err;
+      return null;
     }
   };
 
   const createAnswerPeer = async (
-    sender: string,
+    senderSocketId: string,
     stream: MediaStream,
-    sdp: any,
+    sdp: RTCSessionDescriptionInit,
   ) => {
+    if (!meetingId) return null;
     try {
       const peer = new RTCPeerConnection(RTC_CONFIG);
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
-      peer.ontrack = (e) => {
-        console.log("📹 Track received from", sender);
-        setRemoteStreams((prev) => ({ ...prev, [sender]: e.streams[0] }));
+      peer.ontrack = (event) => {
+        const inbound = event.streams[0];
+        if (inbound) {
+          setRemoteStreams((prev) => ({ ...prev, [senderSocketId]: inbound }));
+        }
       };
 
-      peer.onicecandidate = (e) => {
-        if (e.candidate) {
-          console.log("🧊 ICE candidate to", sender);
+      peer.onicecandidate = (event) => {
+        if (event.candidate) {
           socket.emit("candidate", {
-            target: sender,
-            sender: socket.id,
-            candidate: e.candidate,
+            roomId: meetingId,
+            target: senderSocketId,
+            candidate: event.candidate,
           });
         }
       };
 
-      peer.onicegatheringstatechange = () => {
-        console.log("ICE Gathering State:", peer.iceGatheringState);
-      };
-
       peer.onconnectionstatechange = () => {
-        console.log("Connection state with", sender, ":", peer.connectionState);
+        if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
+          setRemoteStreams((prev) => {
+            const next = { ...prev };
+            delete next[senderSocketId];
+            return next;
+          });
+        }
       };
 
       await peer.setRemoteDescription(new RTCSessionDescription(sdp));
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
-      console.log("📤 Sending answer to", sender);
-      socket.emit("answer", { target: sender, sender: socket.id, sdp: answer });
+      socket.emit("answer", { roomId: meetingId, target: senderSocketId, sdp: answer });
 
       return peer;
     } catch (err) {
       console.error("❌ Error creating answer peer:", err);
-      throw err;
+      return null;
     }
   };
+
+  useEffect(() => {
+    if (!meetingId || !user) return;
+
+    const handleExistingUsers = (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const stream = streamRef.current;
+      if (!stream) return;
+      (payload.users || []).forEach((entry: any) => {
+        const socketId = entry?.socketId;
+        if (!socketId || socketId === socket.id) return;
+        if (peersRef.current[socketId]) return;
+        const peer = createPeer(socketId, stream);
+        if (peer) {
+          peersRef.current[socketId] = peer;
+        }
+      });
+    };
+
+    const handleUserJoined = (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const stream = streamRef.current;
+      const socketId = payload.socketId;
+      if (!stream || !socketId || socketId === socket.id) return;
+      if (peersRef.current[socketId]) return;
+      const peer = createPeer(socketId, stream);
+      if (peer) {
+        peersRef.current[socketId] = peer;
+      }
+    };
+
+    const handleOffer = async (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const { sender, sdp } = payload;
+      const stream = streamRef.current;
+      if (!stream || !sender || !sdp) return;
+      if (peersRef.current[sender]) return;
+      const peer = await createAnswerPeer(sender, stream, sdp);
+      if (peer) {
+        peersRef.current[sender] = peer;
+      }
+    };
+
+    const handleAnswer = async (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const { sender, sdp } = payload;
+      const peer = sender ? peersRef.current[sender] : undefined;
+      if (peer && sdp) {
+        await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+      }
+    };
+
+    const handleCandidate = async (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const { sender, candidate } = payload;
+      const peer = sender ? peersRef.current[sender] : undefined;
+      if (peer && candidate) {
+        try {
+          await peer.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (err) {
+          console.error("❌ Error applying ICE candidate:", err);
+        }
+      }
+    };
+
+    const handleUserLeft = (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const socketId = payload.socketId;
+      if (!socketId) return;
+      const peer = peersRef.current[socketId];
+      if (peer) {
+        try { peer.close(); } catch {}
+        delete peersRef.current[socketId];
+      }
+      setRemoteStreams((prev) => {
+        const next = { ...prev };
+        delete next[socketId];
+        return next;
+      });
+      const screenPeer = screenPeersRef.current[socketId];
+      if (screenPeer) {
+        try { screenPeer.close(); } catch {}
+        delete screenPeersRef.current[socketId];
+        setScreenStreams((prev) => {
+          const next = { ...prev };
+          delete next[socketId];
+          return next;
+        });
+      }
+    };
+
+    const handleOfferScreen = async (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const { sender, sdp } = payload;
+      if (!sender || !sdp) return;
+      if (screenPeersRef.current[sender]) return;
+      const peer = new RTCPeerConnection(RTC_CONFIG);
+      screenPeersRef.current[sender] = peer;
+      peer.ontrack = (event) => {
+        const inbound = event.streams[0];
+        if (inbound) {
+          setScreenStreams((prev) => ({ ...prev, [sender]: inbound }));
+        }
+      };
+      peer.onicecandidate = (event) => {
+        if (event.candidate && meetingId) {
+          socket.emit("candidate-screen", {
+            roomId: meetingId,
+            target: sender,
+            candidate: event.candidate,
+          });
+        }
+      };
+      peer.onconnectionstatechange = () => {
+        if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
+          setScreenStreams((prev) => {
+            const next = { ...prev };
+            delete next[sender];
+            return next;
+          });
+        }
+      };
+      await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+      if (meetingId) {
+        socket.emit("answer-screen", { roomId: meetingId, target: sender, sdp: answer });
+      }
+    };
+
+    const handleAnswerScreen = async (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const { sender, sdp } = payload;
+      const peer = sender ? screenPeersRef.current[sender] : undefined;
+      if (peer && sdp) {
+        await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+      }
+    };
+
+    const handleCandidateScreen = async (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const { sender, candidate } = payload;
+      const peer = sender ? screenPeersRef.current[sender] : undefined;
+      if (peer && candidate) {
+        try {
+          await peer.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (err) {
+          console.error("❌ Error applying screen ICE candidate:", err);
+        }
+      }
+    };
+
+    const handleStopScreenShare = (payload: any) => {
+      if (!payload || payload.roomId !== meetingId) return;
+      const socketId = payload.socketId || payload.sender;
+      if (!socketId) return;
+      const peer = screenPeersRef.current[socketId];
+      if (peer) {
+        try { peer.close(); } catch {}
+        delete screenPeersRef.current[socketId];
+      }
+      setScreenStreams((prev) => {
+        const next = { ...prev };
+        delete next[socketId];
+        return next;
+      });
+    };
+
+    socket.on("existing-users", handleExistingUsers);
+    socket.on("user-joined", handleUserJoined);
+    socket.on("offer", handleOffer);
+    socket.on("answer", handleAnswer);
+    socket.on("candidate", handleCandidate);
+    socket.on("user-left", handleUserLeft);
+    socket.on("offer-screen", handleOfferScreen);
+    socket.on("answer-screen", handleAnswerScreen);
+    socket.on("candidate-screen", handleCandidateScreen);
+    socket.on("stop-screen-share", handleStopScreenShare);
+
+    return () => {
+      socket.off("existing-users", handleExistingUsers);
+      socket.off("user-joined", handleUserJoined);
+      socket.off("offer", handleOffer);
+      socket.off("answer", handleAnswer);
+      socket.off("candidate", handleCandidate);
+      socket.off("user-left", handleUserLeft);
+      socket.off("offer-screen", handleOfferScreen);
+      socket.off("answer-screen", handleAnswerScreen);
+      socket.off("candidate-screen", handleCandidateScreen);
+      socket.off("stop-screen-share", handleStopScreenShare);
+    };
+  }, [meetingId, user]);
 
   // -------------------------
   // Screen share handler
@@ -279,7 +480,7 @@ const Meeting = () => {
       Object.values(screenPeersRef.current).forEach((p) => p.close());
       screenPeersRef.current = {};
       setIsScreenSharing(false);
-      socket.emit("stop-screen-share", meetingId, user.id);
+      socket.emit("stop-screen-share", { roomId: meetingId });
       return;
     }
 
@@ -309,10 +510,10 @@ const Meeting = () => {
           .forEach((track) => peer.addTrack(track, screenStream));
 
         peer.onicecandidate = (e) => {
-          if (e.candidate) {
+          if (e.candidate && meetingId) {
             socket.emit("candidate-screen", {
+              roomId: meetingId,
               target: participantId,
-              sender: user.id,
               candidate: e.candidate,
             });
           }
@@ -320,11 +521,13 @@ const Meeting = () => {
 
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
-        socket.emit("offer-screen", {
-          target: participantId,
-          sender: user.id,
-          sdp: offer,
-        });
+        if (meetingId) {
+          socket.emit("offer-screen", {
+            roomId: meetingId,
+            target: participantId,
+            sdp: offer,
+          });
+        }
       }
 
       // Handle screen stop
@@ -354,7 +557,7 @@ const Meeting = () => {
     }
     Object.values(peersRef.current).forEach((p) => { try { p.close(); } catch {} });
     peersRef.current = {};
-    socket.emit('leave-room', meetingId, user?.id);
+    socket.emit("leave-room", { roomId: meetingId });
     navigate('/dashboard');
   };
 
@@ -631,5 +834,3 @@ const Meeting = () => {
     </div>
   );
 };
-
-export default Meeting;

@@ -1,63 +1,73 @@
 // ✅ server.js (Fixed & Cleaned Version)
 import express from 'express';
 import http from 'http';
-import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
-import dotenv from 'dotenv';
-dotenv.config();
+import { Server as SocketIOServer } from 'socket.io';
+import authRouter from './routes/auth.js';
 
-// Initialize only once to avoid "Identifier ... already been declared" on re-run / hot reload
-if (!globalThis.__connectnow_initialized) {
-  globalThis.__connectnow_initialized = true;
+// create or reuse the express app (prevents "Cannot redeclare 'app'")
+const app = globalThis.__connectnow_app || express();
+if (!globalThis.__connectnow_app) {
+  globalThis.__connectnow_app = app;
 
-  // app
-  globalThis.__connectnow_app = express();
-  globalThis.__connectnow_app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
-    credentials: true,
-  }));
-  globalThis.__connectnow_app.use(express.json());
+  // middleware / routes only register once
+  app.use(express.json());
 
-  // http server
-  globalThis.__connectnow_server = http.createServer(globalThis.__connectnow_app);
+  // allow the front-end origin (Vite is running on 8080)
+  const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:8080',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
 
-  // socket.io
-  globalThis.__connectnow_io = new SocketIOServer(globalThis.__connectnow_server, {
-    cors: {
-      origin: [process.env.FRONTEND_URL || 'http://localhost:8080'],
-      methods: ['GET', 'POST'],
-      credentials: true,
+  app.use(cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // allow curl/postman (no Origin)
+      return allowedOrigins.includes(origin) ? cb(null, true) : cb(new Error('CORS not allowed'));
     },
-  });
+    credentials: true,
+    methods: ['GET','POST','PUT','DELETE','OPTIONS']
+  }));
 
-  // simple routes for health and auth/me (defensive to avoid 500)
-  globalThis.__connectnow_app.get('/health', (req, res) => res.json({ ok: true }));
-  globalThis.__connectnow_app.get('/api/auth/me', (req, res) => {
-    try {
-      const auth = req.headers.authorization;
-      if (!auth) return res.status(401).json({ error: 'Missing Authorization header' });
-      // simple test response — replace with real auth logic
-      return res.json({ user: { id: 'test-id', email: 'test@example.com' } });
-    } catch (err) {
-      console.error('/api/auth/me handler error', err);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+  // simple logger
+  app.use((req, res, next) => { console.log(new Date().toISOString(), req.method, req.path, 'from', req.headers.origin); next(); });
 
-  // basic socket handlers
-  globalThis.__connectnow_io.on('connection', (socket) => {
-    console.log('socket connected:', socket.id);
-    socket.on('disconnect', () => console.log('socket disconnected:', socket.id));
-  });
-
-  // start listening
-  const PORT = parseInt(process.env.PORT || '5000', 10);
-  const HOST = process.env.HOST || '0.0.0.0';
-  globalThis.__connectnow_server.listen(PORT, HOST, () => {
-    console.log(`Server running on http://${HOST}:${PORT}`);
-  });
+  // mount routers AFTER cors/json
+  app.use('/api/auth', authRouter);
 }
 
-export const app = globalThis.__connectnow_app;
-export const server = globalThis.__connectnow_server;
-export const io = globalThis.__connectnow_io;
+// create or reuse the http server
+const server = globalThis.__connectnow_server || http.createServer(app);
+if (!globalThis.__connectnow_server) {
+  globalThis.__connectnow_server = server;
+  server.listen(process.env.PORT || 5000, () => console.log(`Server running on http://0.0.0.0:${process.env.PORT || 5000}`));
+}
+
+// ensure socket.io is created once and configured to use the same "/socket.io" path & CORS
+const io = globalThis.__connectnow_io || new SocketIOServer(server, {
+  path: '/socket.io',
+  cors: {
+    origin: [process.env.FRONTEND_URL || 'http://localhost:8080', 'http://localhost:5173'],
+    methods: ['GET','POST'],
+    credentials: true
+  },
+  transports: ['polling','websocket'],
+  pingInterval: 25000,
+  pingTimeout: 60000
+});
+
+if (!globalThis.__connectnow_io) {
+  globalThis.__connectnow_io = io;
+
+  // attach handlers on the root namespace to accept client root connections
+  io.on('connection', (socket) => {
+    console.log('socket connected', socket.id);
+    socket.on('disconnect', (reason) => console.log('socket disconnected', socket.id, reason));
+  });
+
+  // optional: create any explicit namespaces you expect (example "/chat")
+  // io.of('/chat').on('connection', s => { console.log('chat ns connected', s.id); });
+}
+
+// export if other modules import this file (optional)
+export { app, server, io };
