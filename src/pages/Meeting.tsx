@@ -44,7 +44,7 @@ const Meeting = () => {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const peersRef = useRef<{ [id: string]: RTCPeerConnection }>({});
-  const screenPeersRef = useRef<{ [key: string]: RTCPeerConnection }>({});
+  const screenPeersRef = useRef<{ [id: string]: RTCPeerConnection }>({});
 
   // ✅ Check authentication
   useEffect(() => {
@@ -93,51 +93,66 @@ const Meeting = () => {
     fetchMeetingDetails();
   }, [meetingId, user]);
 
-  // ✅ Setup camera + audio + WebRTC for participants
+  // single helper that accepts the ref and reuses the stream
+  async function acquireLocalStream(
+    ref: React.MutableRefObject<MediaStream | null>,
+    constraints: MediaStreamConstraints
+  ) {
+    try {
+      if (!ref.current) {
+        const s = await navigator.mediaDevices.getUserMedia(constraints);
+        ref.current = s;
+        setLocalStream(s);
+        if (localVideoRef.current) localVideoRef.current.srcObject = s;
+      }
+      return ref.current;
+    } catch (err: any) {
+      console.error('getUserMedia error', err?.name, err?.message || err);
+      throw err;
+    }
+  }
+
   useEffect(() => {
     if (!user || !meetingId) return;
+    let mounted = true;
 
-    const initializeMedia = async () => {
+    (async () => {
       try {
-        // Acquire and reuse local stream only once
-        if (!streamRef.current) {
-          const constraints: MediaStreamConstraints = { video: true, audio: true };
-          const s = await navigator.mediaDevices.getUserMedia(constraints);
-          streamRef.current = s;
-          setLocalStream(s);
-          if (localVideoRef.current) localVideoRef.current.srcObject = s;
-        }
-
+        const stream = await acquireLocalStream(streamRef, { video: true, audio: true });
         socket.emit('join-room', meetingId, user.id);
-      } catch (err: any) {
-        // Detailed error logging
-        console.error('getUserMedia error', err?.name, err?.message || err);
-        toast({
-          title: 'Camera / Microphone Error',
-          description: `Could not access media devices: ${err?.message || err}`,
-          variant: 'destructive',
-        });
+      } catch (err) {
+        toast?.({ title: 'Media Error', description: err?.message || String(err), variant: 'destructive' });
       }
-    };
+    })();
 
-    initializeMedia();
-
-    return () => {
-      // Stop tracks and release devices
+    // cleanup when leaving / reload
+    const cleanup = () => {
+      // stop tracks
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
         setLocalStream(null);
       }
-
-      // Close all peer connections
-      Object.values(peersRef.current).forEach((p) => {
-        try { p.close(); } catch { /* noop */ }
+      // close peers
+      Object.values(peersRef.current).forEach((p: RTCPeerConnection) => {
+        try { p.close(); } catch {}
       });
       peersRef.current = {};
-      socket.emit('leave-room', meetingId, user.id);
+      if (meetingId && user?.id) socket.emit('leave-room', meetingId, user.id);
     };
-  }, [user, meetingId, toast]);
+
+    window.addEventListener('beforeunload', cleanup);
+    document.addEventListener('visibilitychange', () => {
+      // optional: release camera when tab hidden (if desired)
+      // if (document.visibilityState === 'hidden') cleanup();
+    });
+
+    return () => {
+      window.removeEventListener('beforeunload', cleanup);
+      cleanup();
+      mounted = false;
+    };
+  }, [user, meetingId]);
 
   // -------------------------
   // WebRTC helper functions
@@ -618,19 +633,3 @@ const Meeting = () => {
 };
 
 export default Meeting;
-
-// Ensure helper acquires/reuses streams
-async function acquireLocalStream(constraints: MediaStreamConstraints) {
-  try {
-    if (!streamRef.current) {
-      const s = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = s;
-      // If component still mounted, set state / attach to video element
-      // (setLocalStream is available in component scope)
-    }
-    return streamRef.current;
-  } catch (err: any) {
-    console.error('getUserMedia error', err?.name, err?.message || err);
-    throw err;
-  }
-}

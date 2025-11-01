@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { query } from '../config/database.js';
 import { hashPassword, verifyPassword, generateToken } from '../utils/auth.js';
 import { authMiddleware } from '../middleware/auth.js';
+import express from 'express';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
