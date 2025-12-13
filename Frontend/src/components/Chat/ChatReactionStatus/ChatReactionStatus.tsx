@@ -37,13 +37,13 @@ export function ChatReactionStatus({ message, position }: ReactionStatusProps) {
           position === "right"
             ? "status__right"
             : position === "left-tab"
-            ? "status__left-seventy"
-            : "status__left-twenty"
+              ? "status__left-seventy"
+              : "status__left-twenty"
         }
       >
         {Object.entries(
           Object.entries(message.reactions).reduce((acc, [, value]) => {
-            if (value) acc[value] = (acc[value] || 0) + 1;
+            if (value) acc[Number(value)] = (acc[Number(value)] || 0) + 1;
             return acc;
           }, {} as { [key: number]: number })
         )
@@ -96,7 +96,7 @@ export function ChatReactionStatus({ message, position }: ReactionStatusProps) {
                     </User>
 
                     <ReactionImage
-                      src={Object.values(REACTIONS_UI)[value - 1].icon}
+                      src={Object.values(REACTIONS_UI)[Number(value) - 1].icon}
                       alt="reaction"
                     />
                   </Wrapper>
