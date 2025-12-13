@@ -30,8 +30,13 @@ def index():
     return "Chatify Backend is running!"
 
 if __name__ == '__main__':
-    # Initialize DB table on startup (simple approach for MVP)
-    init_db()
+    # Initialize DB table on startup (simple approach for MVP - ensuring tables exist locally)
+    # In production, we might run this via a separate command or keep it here if we want auto-init on start (careful with concurrency)
+    # For Render, better to use the build command or a pre-start script, but this doesn't hurt if idempotent.
+    if os.environ.get('FLASK_ENV') == 'development':
+        init_db()
     
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    # Never run with debug=True in production!
+    debug_mode = os.environ.get('FLASK_ENV') == 'development'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
