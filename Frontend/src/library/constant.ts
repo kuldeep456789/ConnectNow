@@ -9,6 +9,9 @@ export const FILE_ICON = (extension: string) =>
 
 export const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&bold=true";
 
+export const RANDOM_AVATAR = "https://avatar.iran.liara.run/public";
+
+
 export const REACTIONS_UI: {
   [key: string]: {
     icon: string;

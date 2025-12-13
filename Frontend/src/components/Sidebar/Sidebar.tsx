@@ -239,6 +239,7 @@ export function Sidebar() {
               conversation={item}
               conversationId={item.conversationId}
               collapsed={collapsed}
+              onRefresh={refetch}
             />
           ))}
         </SelectConversationContainer>

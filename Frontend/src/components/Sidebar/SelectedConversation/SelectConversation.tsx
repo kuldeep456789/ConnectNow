@@ -1,8 +1,11 @@
 import { Skeleton } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
+import { LuTrash2 } from "react-icons/lu";
+import toast from "react-hot-toast";
 
 import { useUserStore, useUsersInfo } from "../../../hooks";
-import { ConversationInfoType, IMAGE_PROXY } from "../../../library";
+import { ConversationInfoType, IMAGE_PROXY, RANDOM_AVATAR } from "../../../library";
+import api from "../../../services/api";
 import {
   Flex,
   Name,
@@ -17,6 +20,7 @@ import {
   OnlineIndicator,
   MessageStatus,
   AvatarWrapper,
+  DeleteButton,
 } from "./Style";
 
 type SelectConversationProps = {
@@ -24,6 +28,7 @@ type SelectConversationProps = {
   conversation: ConversationInfoType;
   conversationId: string;
   collapsed?: boolean;
+  onRefresh?: () => void;
 };
 
 export function SelectConversation({
@@ -31,6 +36,7 @@ export function SelectConversation({
   conversation,
   conversationId,
   collapsed,
+  onRefresh,
 }: SelectConversationProps) {
   const { data: users, loading } = useUsersInfo(conversation.users);
   const currentUser = useUserStore((state) => state.currentUser);
@@ -38,10 +44,26 @@ export function SelectConversation({
   const filtered = users?.filter((user: any) => user.id !== currentUser?.uid);
   const { id } = useParams();
 
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!window.confirm("Are you sure you want to delete this conversation?")) return;
+
+    try {
+      await api.delete(`/conversations/${conversationId}`);
+      toast.success("Conversation deleted");
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete conversation");
+    }
+  };
+
   if (loading && theme)
     return (
       <Flex theme={theme}>
-        <Skeleton variant="circular" width={65} height={65} sx={{ mr: 1.5 }} />
+        <Skeleton variant="circular" width={55} height={55} sx={{ mr: 1.5 }} />
         <div>
           <Skeleton
             width={100}
@@ -104,20 +126,32 @@ export function SelectConversation({
           className={conversationId === id ? "active" : "not-active"}
         >
           <AvatarWrapper>
-            <Image src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)} alt="" />
+            <Image
+              src={
+                filtered?.[0]?.data()?.photoURL
+                  ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)
+                  : `${RANDOM_AVATAR}?username=${filtered?.[0]?.id || "random"}`
+              }
+              alt=""
+            />
             <OnlineIndicator theme={theme} />
           </AvatarWrapper>
           {!collapsed && (
-            <MessageInfo>
-              <TopRow>
-                <Name theme={theme}>{filtered?.[0].data()?.displayName}</Name>
-                <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
-              </TopRow>
-              <LastMessage theme={theme}>
-                <MessageStatus>✓✓</MessageStatus>
-                {formatLastMessage()}
-              </LastMessage>
-            </MessageInfo>
+            <>
+              <MessageInfo>
+                <TopRow>
+                  <Name theme={theme}>{filtered?.[0].data()?.displayName}</Name>
+                  <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
+                </TopRow>
+                <LastMessage theme={theme}>
+                  <MessageStatus>✓✓</MessageStatus>
+                  {formatLastMessage()}
+                </LastMessage>
+              </MessageInfo>
+              <DeleteButton className="delete-btn" onClick={handleDelete} title="Delete conversation">
+                <LuTrash2 size={18} />
+              </DeleteButton>
+            </>
           )}
         </Flex>
       </Link>
@@ -139,29 +173,42 @@ export function SelectConversation({
                 className={
                   conversationId === id ? "not-active-border" : "active-border"
                 }
-                src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
+                src={
+                  filtered?.[0]?.data()?.photoURL
+                    ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)
+                    : `${RANDOM_AVATAR}?username=${filtered?.[0]?.id || "random1"}`
+                }
                 alt=""
               />
               <ImageSecondary
-                src={IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)}
+                src={
+                  filtered?.[1]?.data()?.photoURL
+                    ? IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)
+                    : `${RANDOM_AVATAR}?username=${filtered?.[1]?.id || "random2"}`
+                }
                 alt=""
               />
             </Relative>
           )}
           {!collapsed && (
-            <MessageInfo>
-              <TopRow>
-                <Name theme={theme}>
-                  {conversation?.group?.groupName ||
-                    filtered
-                      ?.map((user: any) => user.data()?.displayName)
-                      .slice(0, 3)
-                      .join(", ")}
-                </Name>
-                <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
-              </TopRow>
-              <LastMessage theme={theme}>{formatLastMessage()}</LastMessage>
-            </MessageInfo>
+            <>
+              <MessageInfo>
+                <TopRow>
+                  <Name theme={theme}>
+                    {conversation?.group?.groupName ||
+                      filtered
+                        ?.map((user: any) => user.data()?.displayName)
+                        .slice(0, 3)
+                        .join(", ")}
+                  </Name>
+                  <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
+                </TopRow>
+                <LastMessage theme={theme}>{formatLastMessage()}</LastMessage>
+              </MessageInfo>
+              <DeleteButton className="delete-btn" onClick={handleDelete} title="Delete conversation">
+                <LuTrash2 size={18} />
+              </DeleteButton>
+            </>
           )}
         </Flex>
       )}

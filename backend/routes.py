@@ -401,6 +401,39 @@ def get_conversation_details(current_user_id, conversation_id):
         'participants': users_info
     })
 
+@api_bp.route('/conversations/<int:conversation_id>', methods=['DELETE'])
+@token_required
+def delete_conversation(current_user_id, conversation_id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'message': 'Database connection failed'}), 500
+    cur = conn.cursor()
+    
+    # Check participation
+    cur.execute("SELECT 1 FROM conversation_participants WHERE conversation_id = %s AND user_id = %s", (conversation_id, current_user_id))
+    if not cur.fetchone():
+        return jsonify({'message': 'Unauthorized'}), 403
+
+    # Delete conversation (Cascade should handle participants and messages if configured, 
+    # but let's be explicit or assume cascade for now. 
+    # Actually, usually safe to delete dependent rows first or rely on FK cascade.
+    # Assuming FK cascade is NOT guaranteed, I'll delete manually for safety.)
+    
+    try:
+        cur.execute("DELETE FROM messages WHERE conversation_id = %s", (conversation_id,))
+        cur.execute("DELETE FROM conversation_participants WHERE conversation_id = %s", (conversation_id,))
+        cur.execute("DELETE FROM conversations WHERE id = %s", (conversation_id,))
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'message': f'Failed to delete: {str(e)}'}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+    return jsonify({'message': 'Conversation deleted successfully'}), 200
+
 # --- Message Routes ---
 
 @api_bp.route('/messages/<int:conversation_id>', methods=['GET'])

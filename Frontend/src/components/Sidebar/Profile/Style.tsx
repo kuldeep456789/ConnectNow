@@ -167,3 +167,24 @@ export const UploadButton = styled.label`
   }
 `;
 
+
+export const RemoveButton = styled.button`
+  background-color: #ff4d4d;
+  color: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 1rem;
+  border: none;
+  transition: all 0.2s;
+  &:hover {
+    background-color: #ff0000;
+  }
+`;

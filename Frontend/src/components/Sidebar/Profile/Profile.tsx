@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { FiCamera } from "react-icons/fi";
+import { LuTrash2 } from "react-icons/lu";
 import toast from "react-hot-toast";
 import { useUserStore } from "../../../hooks";
 import {
@@ -8,7 +9,6 @@ import {
   Text,
   Container,
   Wrapper,
-  AvatarPlaceholder,
   EditButton,
   Input,
   ButtonGroup,
@@ -16,9 +16,10 @@ import {
   CancelButton,
   AvatarContainer,
   UploadButton,
+  RemoveButton,
 } from "./Style";
 import { Modal } from "../../Core";
-import { DEFAULT_AVATAR, IMAGE_PROXY, getInitials } from "../../../library";
+import { DEFAULT_AVATAR, IMAGE_PROXY, RANDOM_AVATAR } from "../../../library";
 import api from "../../../services/api";
 
 type ProfileProps = {
@@ -73,6 +74,29 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
     }
   };
 
+  const handleRemoveAvatar = async () => {
+    if (!window.confirm("Are you sure you want to remove your profile picture?")) return;
+
+    setUploading(true);
+    try {
+      // Update profile with empty photoURL
+      const profileRes = await api.put("/profile", { photoURL: "" });
+
+      // Update local state
+      setCurrentUser({
+        ...currentUser,
+        photoURL: profileRes.data.user.photoURL,
+      } as any);
+
+      toast.success("Avatar removed!");
+      setUploading(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to remove avatar");
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!displayName.trim()) {
       toast.error("Display name cannot be empty");
@@ -113,21 +137,27 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
     >
       <Container>
         <AvatarContainer>
-          {currentUser?.photoURL && currentUser.photoURL !== DEFAULT_AVATAR ? (
-            <Image
-              src={IMAGE_PROXY(currentUser.photoURL)}
-              alt="profile picture"
-            />
-          ) : (
-            <AvatarPlaceholder theme={theme}>
-              {getInitials(currentUser?.displayName || "")}
-            </AvatarPlaceholder>
-          )}
+          <Image
+            src={
+              currentUser?.photoURL && currentUser.photoURL !== DEFAULT_AVATAR
+                ? IMAGE_PROXY(currentUser.photoURL)
+                : `${RANDOM_AVATAR}?username=${currentUser?.uid}`
+            }
+            alt="profile picture"
+          />
+
           {isEditing && (
             <>
               <UploadButton htmlFor="avatar-upload">
                 <FiCamera />
               </UploadButton>
+
+              {currentUser?.photoURL && (
+                <RemoveButton onClick={handleRemoveAvatar} title="Remove photo">
+                  <LuTrash2 />
+                </RemoveButton>
+              )}
+
               <input
                 ref={fileInputRef}
                 id="avatar-upload"
