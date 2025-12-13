@@ -1,9 +1,31 @@
 import styled from "styled-components";
 import { StyledProps, color } from "../../library";
 
-export const StyledSideBar = styled.div<StyledProps>`
+
+export const ToggleButton = styled.button<StyledProps>`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) =>
+    theme === "light" ? color.lightMode.navText : color.darkMode.navText};
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: ${({ theme }) =>
+    theme === "light" ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.1)"};
+    color: ${color.primary};
+  }
+`;
+
+export const StyledSideBar = styled.div<StyledProps & { $collapsed?: boolean }>`
   width: 100%;
   height: 100vh;
+  padding-bottom: 80px; /* Space for footer */
   overflow-x: hidden;
   overflow-y: auto;
   border-right: none;
@@ -27,22 +49,22 @@ export const StyledSideBar = styled.div<StyledProps>`
     border-radius: 0 0 20px 0;
   }
   @media screen and (min-width: 869px) {
-    width: 350px;
+    width: ${({ $collapsed }) => $collapsed ? "80px" : "350px"};
     border-right: 1px solid
       ${({ theme }) =>
     theme === "light" ? color.lightMode.border : color.darkMode.border};
   }
 `;
 
-export const StyledNavbar = styled.div<StyledProps>`
+export const StyledNavbar = styled.div<StyledProps & { $collapsed?: boolean }>`
   z-index: 2;
   height: 80px;
   width: 100%;
   position: fixed;
   display: flex;
-  padding: 0 30px;
+  padding: 0 ${({ $collapsed }) => $collapsed ? "10px" : "30px"};
   align-items: center;
-  justify-content: space-between;
+  justify-content: ${({ $collapsed }) => $collapsed ? "center" : "space-between"};
   background-color: ${({ theme }) =>
     theme === "light" ? color.lightMode.background : color.darkMode.background};
   border-bottom: 1px solid
@@ -54,7 +76,7 @@ export const StyledNavbar = styled.div<StyledProps>`
     theme === "light" ? color.lightMode.border : color.darkMode.border};
 
   @media screen and (min-width: 869px) {
-    width: 350px;
+    width: ${({ $collapsed }) => $collapsed ? "80px" : "350px"};
   }
 `;
 
@@ -74,11 +96,12 @@ export const ProfileButton = styled.button`
 export const ProfileMenu = styled.div<StyledProps>`
   z-index: 1;
   position: absolute;
-  top: 70px;
-  right: -27px;
-  width: 150px;
+  top: auto;
+  bottom: 60px;
+  left: 10px;
+  width: 160px;
   background-color: ${({ theme }) =>
-    theme === "light" ? color.white : color.darkMode.border};
+    theme === "light" ? color.white : "#1e1e1e"};
   border: 1px solid
     ${({ theme }) =>
     theme === "light" ? color.lightMode.border : color.lightGreyDark};
@@ -245,8 +268,8 @@ export const SearchInput = styled.input<StyledProps>`
   }
 `;
 
-export const FilterContainer = styled.div<StyledProps>`
-  display: flex;
+export const FilterContainer = styled.div<StyledProps & { $collapsed?: boolean }>`
+  display: ${({ $collapsed }) => $collapsed ? "none" : "flex"};
   gap: 8px;
   padding: 10px 15px;
   border-bottom: 1px solid ${({ theme }) =>
@@ -292,8 +315,9 @@ export const UnreadBadge = styled.span`
   text-align: center;
 `;
 
-export const ContactsSection = styled.div<StyledProps>`
+export const ContactsSection = styled.div<StyledProps & { $collapsed?: boolean }>`
   margin-top: 20px;
+  display: ${({ $collapsed }) => $collapsed ? "none" : "block"};
   border-top: 1px solid ${({ theme }) =>
     theme === "light" ? color.lightMode.border : color.darkMode.border};
 `;
@@ -347,8 +371,74 @@ export const UserAvatarPlaceholder = styled.div<{ theme: string }>`
   font-weight: bold;
 `;
 
-export const UserInfo = styled.div`
+export const SidebarFooter = styled.div<StyledProps & { $collapsed?: boolean }>`
+  z-index: 2;
+  height: 70px;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  padding: 0 ${({ $collapsed }) => $collapsed ? "10px" : "20px"};
+  align-items: center;
+  justify-content: ${({ $collapsed }) => $collapsed ? "center" : "space-between"};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: ${({ theme }) =>
+    theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(33, 33, 33, 0.8)"};
+  border-top: 1px solid
+    ${({ theme }) =>
+    theme === "light" ? color.lightMode.border : color.darkMode.border};
+
+  border-right: 1px solid
+    ${({ theme }) =>
+    theme === "light" ? color.lightMode.border : color.darkMode.border};
+  
+  transition: width 0.3s ease, padding 0.3s ease;
+
+  @media screen and (min-width: 869px) {
+    width: ${({ $collapsed }) => $collapsed ? "80px" : "350px"};
+  }
+`;
+
+export const SettingsButton = styled.button<StyledProps>`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) =>
+    theme === "light" ? color.lightMode.navText : color.darkMode.navText};
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  
+  &:hover {
+    background-color: ${({ theme }) =>
+    theme === "light" ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.1)"};
+    color: ${color.primary};
+  }
+`;
+
+export const AvatarWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+export const OnlineIndicator = styled.div`
+  width: 12px;
+  height: 12px;
+  background-color: #2cc069;
+  border-radius: 50%;
+  border: 2px solid white;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+`;
+
+export const UserInfo = styled.div<StyledProps & { $collapsed?: boolean }>`
   flex: 1;
+  display: ${({ $collapsed }) => $collapsed ? "none" : "block"};
 `;
 
 export const UserName = styled.p<StyledProps>`

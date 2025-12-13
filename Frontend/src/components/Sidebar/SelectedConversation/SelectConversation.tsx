@@ -23,12 +23,14 @@ type SelectConversationProps = {
   theme: string | null;
   conversation: ConversationInfoType;
   conversationId: string;
+  collapsed?: boolean;
 };
 
 export function SelectConversation({
   theme,
   conversation,
   conversationId,
+  collapsed,
 }: SelectConversationProps) {
   const { data: users, loading } = useUsersInfo(conversation.users);
   const currentUser = useUserStore((state) => state.currentUser);
@@ -105,16 +107,18 @@ export function SelectConversation({
             <Image src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)} alt="" />
             <OnlineIndicator theme={theme} />
           </AvatarWrapper>
-          <MessageInfo>
-            <TopRow>
-              <Name theme={theme}>{filtered?.[0].data()?.displayName}</Name>
-              <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
-            </TopRow>
-            <LastMessage theme={theme}>
-              <MessageStatus>✓✓</MessageStatus>
-              {formatLastMessage()}
-            </LastMessage>
-          </MessageInfo>
+          {!collapsed && (
+            <MessageInfo>
+              <TopRow>
+                <Name theme={theme}>{filtered?.[0].data()?.displayName}</Name>
+                <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
+              </TopRow>
+              <LastMessage theme={theme}>
+                <MessageStatus>✓✓</MessageStatus>
+                {formatLastMessage()}
+              </LastMessage>
+            </MessageInfo>
+          )}
         </Flex>
       </Link>
     );
@@ -144,19 +148,21 @@ export function SelectConversation({
               />
             </Relative>
           )}
-          <MessageInfo>
-            <TopRow>
-              <Name theme={theme}>
-                {conversation?.group?.groupName ||
-                  filtered
-                    ?.map((user: any) => user.data()?.displayName)
-                    .slice(0, 3)
-                    .join(", ")}
-              </Name>
-              <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
-            </TopRow>
-            <LastMessage theme={theme}>{formatLastMessage()}</LastMessage>
-          </MessageInfo>
+          {!collapsed && (
+            <MessageInfo>
+              <TopRow>
+                <Name theme={theme}>
+                  {conversation?.group?.groupName ||
+                    filtered
+                      ?.map((user: any) => user.data()?.displayName)
+                      .slice(0, 3)
+                      .join(", ")}
+                </Name>
+                <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
+              </TopRow>
+              <LastMessage theme={theme}>{formatLastMessage()}</LastMessage>
+            </MessageInfo>
+          )}
         </Flex>
       )}
     </Link>

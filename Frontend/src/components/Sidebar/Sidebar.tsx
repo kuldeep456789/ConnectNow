@@ -1,6 +1,6 @@
 import ClickAwayListener from "react-click-away-listener";
 import { Link, useNavigate } from "react-router-dom";
-import { LuPlus } from "react-icons/lu";
+import { LuPlus, LuPanelLeftClose, LuPanelLeftOpen, LuSettings } from "react-icons/lu";
 import { useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
@@ -9,22 +9,17 @@ import {
   StyledNavbar,
   PrimaryContainer,
   ProfileButton,
-  ProfileButtonContainer,
   ProfileMenu,
   ProfilePicture,
-  SecondaryContainer,
   ShowProfileButton,
   StyledSideBar,
   SignOutButton,
   ThemeButton,
   Wrapper,
   Text,
-  SelectConversationButton,
   SelectConversationContainer,
-  SearchContainer,
-  SearchInput,
-  FilterContainer,
-  FilterTab,
+
+
   ContactsSection,
   SectionTitle,
   UserItem,
@@ -33,6 +28,12 @@ import {
   UserInfo,
   UserName,
   UserEmail,
+
+  ToggleButton,
+  SidebarFooter,
+  SettingsButton,
+  AvatarWrapper,
+  OnlineIndicator
 } from "./Style";
 import { useTheme } from "../../hooks/useTheme";
 import { useUserStore } from "../../hooks";
@@ -46,17 +47,16 @@ import { CreateConversation, Profile, SelectConversation } from ".";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import api from "../../services/api";
 
-type FilterType = "all" | "unread" | "groups";
+
 
 export function Sidebar() {
   const { currentUser, setCurrentUser } = useUserStore();
   const [isSettingOpen, setIsSettingOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [isConversationModalOpen, setConversationModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
@@ -134,23 +134,9 @@ export function Sidebar() {
 
     let filtered = [...data];
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      filtered = filtered.filter((conv: any) => {
-        const groupName = conv.group?.groupName?.toLowerCase() || "";
-        const searchLower = searchQuery.toLowerCase();
-        return groupName.includes(searchLower);
-      });
-    }
 
-    // Apply category filter
-    if (activeFilter === "groups") {
-      filtered = filtered.filter((conv: any) => conv.users?.length > 2);
-    } else if (activeFilter === "unread") {
-      filtered = filtered.filter((conv: any) => {
-        return !conv.seen?.[currentUser?.uid || ""];
-      });
-    }
+
+
 
     // Sort by most recent
     filtered.sort((a: any, b: any) => {
@@ -160,86 +146,60 @@ export function Sidebar() {
     });
 
     return filtered;
-  }, [data, searchQuery, activeFilter, currentUser]);
+  }, [data, currentUser]);
 
   // Filter users based on search
   const filteredUsers = useMemo(() => {
     if (!allUsers) return [];
 
     // Exclude current user
-    let filtered = allUsers.filter((user: any) => user.uid !== currentUser?.uid);
-
-    // Apply search
-    if (searchQuery.trim()) {
-      const searchLower = searchQuery.toLowerCase();
-      filtered = filtered.filter((user: any) => {
-        const name = user.displayName?.toLowerCase() || "";
-        const email = user.email?.toLowerCase() || "";
-        return name.includes(searchLower) || email.includes(searchLower);
-      });
-    }
-
+    const filtered = allUsers.filter((user: any) => user.uid !== currentUser?.uid);
     return filtered;
-  }, [allUsers, searchQuery, currentUser]);
+  }, [allUsers, currentUser]);
+
+
+
+  const handlePlusClick = () => {
+    if (collapsed) setCollapsed(false);
+    // Modal open logic is handled by state, but if we wanted to focus search it would be here
+    // For now, adhering to User Request to just open modal or whatever was requested.
+    // Actually user asked for "plus icon people in sidebar", implying search focus?
+    // "when i clicked they slightly hide on left side" - sidebar collapse
+    // "remove in sidebar , search bar" - Wait, user ASKED TO REMOVE SEARCH BAR in previous step.
+    // So Plus button probably just opens modal now.
+    setConversationModalOpen(true);
+  };
 
   return (
-    <StyledSideBar theme={theme}>
-      <StyledNavbar theme={theme}>
-        <Link
-          to="/"
-          style={{
-            textDecoration: "none",
-            fontSize: "calc(24 / 16 * 1rem)",
-            fontWeight: 500,
-            color: theme === "light" ? "#24292f" : "#fff",
-          }}
-        >
-          Chatify
-        </Link>
+    <StyledSideBar theme={theme} $collapsed={collapsed}>
+      <StyledNavbar theme={theme} $collapsed={collapsed}>
+        {!collapsed && (
+          <Link
+            to="/"
+            style={{
+              textDecoration: "none",
+              fontSize: "calc(24 / 16 * 1rem)",
+              fontWeight: 500,
+              color: theme === "light" ? "#24292f" : "#fff",
+            }}
+          >
+            Chatify
+          </Link>
+        )}
 
         <Wrapper theme={theme}>
           <PrimaryContainer theme={theme}>
             <ChatButton
               theme={theme}
               aria-label="New conversation"
-              onClick={() => setConversationModalOpen(true)}
+              onClick={handlePlusClick}
             >
               <LuPlus />
             </ChatButton>
           </PrimaryContainer>
-          <SecondaryContainer theme={theme}>
-            <ProfileButtonContainer>
-              <ProfileButton
-                onClick={() => {
-                  setIsSettingOpen(!isSettingOpen);
-                }}
-              >
-                <ProfilePicture
-                  src={IMAGE_PROXY(currentUser?.photoURL ?? DEFAULT_AVATAR)}
-                  alt="profile picture"
-                />
-              </ProfileButton>
-
-              {isSettingOpen && (
-                <ClickAwayListener onClickAway={() => setIsSettingOpen(false)}>
-                  <ProfileMenu theme={theme}>
-                    <ShowProfileButton
-                      theme={theme}
-                      onClick={handleProfileClick}
-                    >
-                      Profile
-                    </ShowProfileButton>
-                    <ThemeButton theme={theme} onClick={toggleTheme}>
-                      {theme === "light" ? "Dark mode" : "Light mode"}
-                    </ThemeButton>
-                    <SignOutButton theme={theme} onClick={signOutUser}>
-                      Sign out
-                    </SignOutButton>
-                  </ProfileMenu>
-                </ClickAwayListener>
-              )}
-            </ProfileButtonContainer>
-          </SecondaryContainer>
+          <ToggleButton theme={theme} onClick={() => setCollapsed(!collapsed)}>
+            {collapsed ? <LuPanelLeftOpen size={24} /> : <LuPanelLeftClose size={24} />}
+          </ToggleButton>
         </Wrapper>
       </StyledNavbar>
 
@@ -259,41 +219,9 @@ export function Sidebar() {
         />
       )}
 
-      {/* Search Bar */}
-      <SearchContainer theme={theme}>
-        <SearchInput
-          theme={theme}
-          type="text"
-          placeholder="Search conversations or contacts..."
-          value={searchQuery}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-        />
-      </SearchContainer>
 
-      {/* Filter Tabs */}
-      <FilterContainer theme={theme}>
-        <FilterTab
-          theme={theme}
-          $active={activeFilter === "all"}
-          onClick={() => setActiveFilter("all")}
-        >
-          All
-        </FilterTab>
-        <FilterTab
-          theme={theme}
-          $active={activeFilter === "unread"}
-          onClick={() => setActiveFilter("unread")}
-        >
-          Unread
-        </FilterTab>
-        <FilterTab
-          theme={theme}
-          $active={activeFilter === "groups"}
-          onClick={() => setActiveFilter("groups")}
-        >
-          Groups
-        </FilterTab>
-      </FilterContainer>
+
+
 
       {/* Conversations Section */}
       {loading ? (
@@ -310,15 +238,16 @@ export function Sidebar() {
               theme={theme}
               conversation={item}
               conversationId={item.conversationId}
+              collapsed={collapsed}
             />
           ))}
         </SelectConversationContainer>
       ) : null}
 
       {/* All Users / Contacts Section */}
-      <ContactsSection theme={theme}>
+      <ContactsSection theme={theme} $collapsed={collapsed}>
         <SectionTitle theme={theme}>
-          {searchQuery ? "Search Results" : "All Contacts"}
+          All Contacts
         </SectionTitle>
         {loadingUsers ? (
           <Container>
@@ -327,7 +256,7 @@ export function Sidebar() {
         ) : filteredUsers.length === 0 ? (
           <Container>
             <Text theme={theme}>
-              {searchQuery ? "No users found" : "No contacts available"}
+              No contacts available
             </Text>
           </Container>
         ) : (
@@ -337,21 +266,67 @@ export function Sidebar() {
               theme={theme}
               onClick={() => handleUserClick(user)}
             >
-              {user.photoURL && user.photoURL !== DEFAULT_AVATAR ? (
-                <UserAvatar src={IMAGE_PROXY(user.photoURL)} alt={user.displayName} />
-              ) : (
-                <UserAvatarPlaceholder theme={theme}>
-                  {getInitials(user.displayName || user.email || "?")}
-                </UserAvatarPlaceholder>
+              <AvatarWrapper>
+                {user.photoURL && user.photoURL !== DEFAULT_AVATAR ? (
+                  <UserAvatar src={IMAGE_PROXY(user.photoURL)} alt={user.displayName} />
+                ) : (
+                  <UserAvatarPlaceholder theme={theme || "light"}>
+                    {getInitials(user.displayName || user.email || "?")}
+                  </UserAvatarPlaceholder>
+                )}
+                <OnlineIndicator />
+              </AvatarWrapper>
+              {!collapsed && (
+                <UserInfo $collapsed={collapsed}>
+                  <UserName theme={theme}>{user.displayName || "Unknown"}</UserName>
+                  <UserEmail theme={theme}>{user.email}</UserEmail>
+                </UserInfo>
               )}
-              <UserInfo>
-                <UserName theme={theme}>{user.displayName || "Unknown"}</UserName>
-                <UserEmail theme={theme}>{user.email}</UserEmail>
-              </UserInfo>
             </UserItem>
           ))
         )}
       </ContactsSection>
+
+      <SidebarFooter theme={theme} $collapsed={collapsed}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <ProfileButton onClick={() => setIsSettingOpen(!isSettingOpen)}>
+            <ProfilePicture
+              src={IMAGE_PROXY(currentUser?.photoURL ?? DEFAULT_AVATAR)}
+              alt="profile picture"
+            />
+          </ProfileButton>
+          {!collapsed && (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <UserName theme={theme} style={{ fontSize: '0.9rem' }}>{currentUser?.displayName || "Me"}</UserName>
+            </div>
+          )}
+        </div>
+
+        {!collapsed && (
+          <SettingsButton theme={theme} onClick={() => setIsSettingOpen(!isSettingOpen)}>
+            <LuSettings size={22} />
+          </SettingsButton>
+        )}
+
+        {isSettingOpen && (
+          <ClickAwayListener onClickAway={() => setIsSettingOpen(false)}>
+            <ProfileMenu theme={theme}>
+              <ShowProfileButton
+                theme={theme}
+                onClick={handleProfileClick}
+              >
+                Profile
+              </ShowProfileButton>
+              <ThemeButton theme={theme} onClick={toggleTheme}>
+                {theme === "light" ? "Dark mode" : "Light mode"}
+              </ThemeButton>
+              <SignOutButton theme={theme} onClick={signOutUser}>
+                Sign out
+              </SignOutButton>
+            </ProfileMenu>
+          </ClickAwayListener>
+        )}
+      </SidebarFooter>
     </StyledSideBar>
   );
 }
