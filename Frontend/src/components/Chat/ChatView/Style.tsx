@@ -21,12 +21,12 @@ export const StylesChatView = styled.div<StyledProps>`
   }
   &::-webkit-scrollbar-thumb {
     background: ${({ theme }) =>
-      theme === "light" ? "darkgray" : color.darkGreyDark};
+    theme === "light" ? "darkgray" : color.darkGreyDark};
     border-radius: 10px;
   }
   &::-webkit-scrollbar-track {
     background: ${({ theme }) =>
-      theme === "light" ? color.lightMode.border : color.darkMode.background};
+    theme === "light" ? color.lightMode.border : color.darkMode.background};
     border-radius: 0 0 20px 0;
   }
 `;
