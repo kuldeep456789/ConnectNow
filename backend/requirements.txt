@@ -4,5 +4,7 @@ psycopg2-binary
 pyjwt
 python-dotenv
 werkzeug
+flask-socketio
+eventlet
 
 gunicorn

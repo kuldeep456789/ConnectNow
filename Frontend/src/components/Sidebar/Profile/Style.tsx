@@ -17,25 +17,7 @@ export const Wrapper = styled.div`
   padding: 15px;
 `;
 
-export const Image = styled.img`
-  border-radius: 50%;
-  width: 80px;
-`;
 
-export const AvatarPlaceholder = styled.div<{ theme: string }>`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.border : color.darkMode.border};
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.title : color.darkMode.title};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-`;
 
 export const Thick = styled.span`
   font-weight: 600;

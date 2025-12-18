@@ -7,9 +7,9 @@ export const IMAGE_PROXY = (url: string) => {
 export const FILE_ICON = (extension: string) =>
   `https://cdn.jsdelivr.net/gh/napthedev/file-icons/file/${extension}.svg`;
 
-export const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&bold=true";
-
-export const RANDOM_AVATAR = "https://avatar.iran.liara.run/public";
+// Default avatar removed in favor of dynamic initials
+export const DEFAULT_AVATAR = "";
+export const RANDOM_AVATAR = "";
 
 
 export const REACTIONS_UI: {

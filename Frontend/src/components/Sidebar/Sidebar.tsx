@@ -10,7 +10,6 @@ import {
   PrimaryContainer,
   ProfileButton,
   ProfileMenu,
-  ProfilePicture,
   ShowProfileButton,
   StyledSideBar,
   SignOutButton,
@@ -18,17 +17,12 @@ import {
   Wrapper,
   Text,
   SelectConversationContainer,
-
-
   ContactsSection,
   SectionTitle,
   UserItem,
-  UserAvatar,
-  UserAvatarPlaceholder,
   UserInfo,
   UserName,
   UserEmail,
-
   ToggleButton,
   SidebarFooter,
   SettingsButton,
@@ -39,11 +33,10 @@ import { useTheme } from "../../hooks/useTheme";
 import { useUserStore } from "../../hooks";
 import { Spinner } from "../Core";
 import {
-  DEFAULT_AVATAR,
   IMAGE_PROXY,
-  getInitials,
 } from "../../library";
 import { CreateConversation, Profile, SelectConversation } from ".";
+import { Avatar } from "../Shared";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import api from "../../services/api";
 
@@ -268,13 +261,11 @@ export function Sidebar() {
               onClick={() => handleUserClick(user)}
             >
               <AvatarWrapper>
-                {user.photoURL && user.photoURL !== DEFAULT_AVATAR ? (
-                  <UserAvatar src={IMAGE_PROXY(user.photoURL)} alt={user.displayName} />
-                ) : (
-                  <UserAvatarPlaceholder theme={theme || "light"}>
-                    {getInitials(user.displayName || user.email || "?")}
-                  </UserAvatarPlaceholder>
-                )}
+                <Avatar
+                  src={user.photoURL ? IMAGE_PROXY(user.photoURL) : null}
+                  name={user.displayName || user.email || "?"}
+                  size="40px"
+                />
                 <OnlineIndicator />
               </AvatarWrapper>
               {!collapsed && (
@@ -291,9 +282,10 @@ export function Sidebar() {
       <SidebarFooter theme={theme} $collapsed={collapsed}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <ProfileButton onClick={() => setIsSettingOpen(!isSettingOpen)}>
-            <ProfilePicture
-              src={IMAGE_PROXY(currentUser?.photoURL ?? DEFAULT_AVATAR)}
-              alt="profile picture"
+            <Avatar
+              src={currentUser?.photoURL ? IMAGE_PROXY(currentUser.photoURL) : null}
+              name={currentUser?.displayName || currentUser?.email || "?"}
+              size="50px"
             />
           </ProfileButton>
           {!collapsed && (

@@ -4,16 +4,13 @@ import { LuTrash2 } from "react-icons/lu";
 import toast from "react-hot-toast";
 
 import { useUserStore, useUsersInfo } from "../../../hooks";
-import { ConversationInfoType, IMAGE_PROXY, RANDOM_AVATAR } from "../../../library";
+import { ConversationInfoType, IMAGE_PROXY } from "../../../library";
 import api from "../../../services/api";
+import { Avatar } from "../../Shared";
 import {
   Flex,
   Name,
   LastMessage,
-  Relative,
-  ImagePrimary,
-  ImageSecondary,
-  Image,
   MessageInfo,
   TopRow,
   Timestamp,
@@ -126,13 +123,19 @@ export function SelectConversation({
           className={conversationId === id ? "active" : "not-active"}
         >
           <AvatarWrapper>
-            <Image
-              src={
-                filtered?.[0]?.data()?.photoURL
-                  ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)
-                  : `${RANDOM_AVATAR}?username=${filtered?.[0]?.id || "random"}`
+            <Avatar
+              src={filtered?.[0]?.data()?.photoURL ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL) : null}
+              name={
+                filtered?.[0]?.data()?.displayName ||
+                filtered?.[0]?.data()?.email ||
+                filtered?.[0]?.id ||
+                conversation.users?.find((uid: string) => uid !== currentUser?.uid) ||
+                currentUser?.displayName ||
+                currentUser?.email ||
+                "?"
               }
-              alt=""
+              size="55px"
+              style={{ marginRight: "10px" }}
             />
             <OnlineIndicator theme={theme} />
           </AvatarWrapper>
@@ -166,29 +169,24 @@ export function SelectConversation({
           className={conversationId === id ? "active" : "not-active"}
         >
           {conversation?.group?.groupImage ? (
-            <Image src={conversation.group.groupImage} alt="" />
+            <Avatar
+              src={conversation.group.groupImage}
+              name={conversation.group.groupName || "Group"}
+              size="55px"
+              style={{ marginRight: "10px" }}
+            />
           ) : (
-            <Relative>
-              <ImagePrimary
-                className={
-                  conversationId === id ? "not-active-border" : "active-border"
-                }
-                src={
-                  filtered?.[0]?.data()?.photoURL
-                    ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)
-                    : `${RANDOM_AVATAR}?username=${filtered?.[0]?.id || "random1"}`
-                }
-                alt=""
-              />
-              <ImageSecondary
-                src={
-                  filtered?.[1]?.data()?.photoURL
-                    ? IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)
-                    : `${RANDOM_AVATAR}?username=${filtered?.[1]?.id || "random2"}`
-                }
-                alt=""
-              />
-            </Relative>
+            <Avatar
+              src={null}
+              name={
+                conversation?.group?.groupName ||
+                filtered?.map((user: any) => user.data()?.displayName || user.data()?.email).join(", ") ||
+                users?.map((user: any) => user.data?.()?.displayName || user.data?.()?.email).join(", ") ||
+                "?"
+              }
+              size="55px"
+              style={{ marginRight: "10px" }}
+            />
           )}
           {!collapsed && (
             <>

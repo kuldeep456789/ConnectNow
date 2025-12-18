@@ -1,111 +1,141 @@
-# 📱 Chatify - Chat App
+# 🌐 ConnectNow
 
-Chatify is a realtime chat app built with Vite, React, TypeScript, Firebase, and other technologies. This chat app is purposefully made for the web, like a web chat app, but it also works on mobile devices.
+> **A Modern, Full-Stack Real-Time Messaging Application**
 
-## 🚀 Features
+**ConnectNow** is a robust and visually engaging chat application designed to facilitate seamless communication. Built with a modern tech stack ensuring performance and scalability, it offers a premium user experience with features like secure authentication, real-time messaging, and media sharing.
 
-- 🗝 Sign in with Google (authentication)
-- 👤 View your own profile, email, name, id, etc.
-- 🗨 Create conversations (1-on-1 or group)
-- 📬 Users can send:
-  - 📁 Files
-  - 🖼 Images
-  - 📝 Text
-- 🔗 Detect links and add an anchor tag to them
-- 💬 Reply to messages, indicating what you're replying to (text, image, file, etc.)
-- 📥 Drag and drop to upload files and images
-- 🔔 Get notified of unseen messages
-- 👀 See if someone has seen your message (via a small avatar moving down if seen)
-- 😂 Send reactions to messages
-- 😊 Send emojis through an emoji picker
-- 👁 View reactions to each message
-- 📸 View sent images and files
-- 🔄 Change group picture and group name
-- 🌓 Toggle between light mode and dark mode
-- 🚮 Remove messages, with a note that says "message removed"
-- 👑 Make someone an admin, kick someone out of the group, and add participants in the current active group again
+This project demonstrates proficiency in **Full-Stack Development**, **Database Management**, and **UI/UX Design**.
 
-## 🛠️ Main Technologies
-- `React`
-- `Firebase`
-- `TypeScript`
-- `Styled Components`
-- `Vite`
+---
 
-## 📝 Process
+## 🚀 Key Features
 
-I started by jotting down in my notebook what features I wanted. I often use WhatsApp Web, so I tried to draw inspiration from that.
+*   **🔐 Secure Authentication**: 
+    *   Custom implementation using **JWT** (JSON Web Tokens) for stateless, secure sessions.
+    *   Password hashing and secure user registration/login flows.
+*   **💬 Real-time Messaging**:
+    *   Instant message delivery.
+    *   Support for **Text**, **Emojis**, and **Reactions**.
+    *   **Reply System**: Context-aware replies to specific messages.
+*   **📂 Media Sharing**:
+    *   Robust file and image handling.
+    *   **Drag & Drop** functionality for intuitive uploads.
+    *   Integrated media viewer for images and files within the chat.
+*   **👥 User Management**:
+    *   **Profile Customization**: Users can update their display name and profile picture.
+    *   **User Discovery**: Efficient search functionality to find and connect with other users.
+*   **🎨 Advanced UI/UX**:
+    *   **Responsive Design**: Optimized for various screen sizes.
+    *   **Dark Mode**: Built-in, system-aware theming.
+    *   **Styled Components**: Modular and maintainable CSS-in-JS styling.
 
-I obviously started by setting up Firebase, then continued with authentication. Next, I set up routing, the home page, and the private route for it, then focused on the sidebar, since there's a lot happening there, and finally the chat page and its components.
+---
 
-Then it was the smaller details, like creating a drag and drop for images and files, adding an emoji picker, changing the group name, etc. I didn't have a design idea at first; I just built everything and came up with something later. By design, I mean the colors and the styling.
+## 🛠️ Technology Stack
 
-The most challenging part was figuring out how the data structure should be. One new thing I learned was indexing in Firebase. That was new to me and something I can take with me into the future.
+### **Frontend (Client-Side)**
+*   **Framework**: [React](https://react.dev/) (v18) via [Vite](https://vitejs.dev/)
+*   **Language**: [TypeScript](https://www.typescriptlang.org/)
+*   **Styling**: [Styled Components](https://styled-components.com/) & [Emotion](https://emotion.sh/)
+*   **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+*   **Animations**: [Framer Motion](https://www.framer.com/motion/)
+*   **Networking**: Axios
+*   **Utilities**: React Hot Toast (Notifications), Emoji Mart
 
-## 🤔 How Can It Be Improved?
+### **Backend (Server-Side)**
+*   **Framework**: [Flask](https://flask.palletsprojects.com/) (Python)
+*   **Database**: [PostgreSQL](https://www.postgresql.org/)
+*   **Authentication**: PyJWT
+*   **Database Adapter**: Psycopg2
+*   **CORS**: Flask-CORS
 
-It would be amazing if users were able to send GIFs and stickers, just like on WhatsApp. Also, being able to send voice messages and videos to each other would greatly improve the project. Adding testing would be beneficial as well, something I definitely plan to do next time.
+---
 
-## 🐛 Current Bug
+## 💻 Getting Started
 
-So far, I'm not really sure if there are any bugs. However, there might be some issues on the mobile version. I tested it out on my phone (iPhone 14 Pro Max), and so far it looks good there, but on smaller devices or Android phones, it might look a bit odd. I'm not sure from that side, but there might be some bugs to iron out.
+Follow these instructions to set up the project locally for development.
 
+### Prerequisites
+*   **Node.js** (v18+)
+*   **Python** (v3.9+)
+*   **PostgreSQL** installed and running
 
-<details>
-<summary><h3> 🎥 - Demo Video </h3></summary>
-<video src="https://github.com/mirayatech/Chatify/assets/71933266/c1695a42-8d74-4a00-b89c-e3b6adc4119d" controls="controls" style="max-width: 730px;">
-</video>
+### 1️⃣ Backend Setup
 
-<video src="https://github.com/mirayatech/Chatify/assets/71933266/f11d1d9b-2517-4a5c-81df-1711f4182da0" controls="controls">
-</video>
-  
+1.  **Navigate to the backend directory:**
+    ```bash
+    cd backend
+    ```
 
-</details>
+2.  **Create and activate a virtual environment:**
+    ```bash
+    # Windows
+    python -m venv venv
+    .\venv\Scripts\activate
 
-<details>
-<summary><h3> 📸 - Demo Images </h3></summary>
+    # macOS/Linux
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
-#
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-![Screenshot 2023-12-28 at 11 45 11](https://github.com/mirayatech/Chatify/assets/71933266/06f67da2-8a3b-480e-8dbb-9d9e69919329)
+4.  **Configure Environment Variables:**
+    *   Create a `.env` file in the `backend` folder.
+    *   Add your database credentials and secret key:
+        ```env
+        DATABASE_URL=postgresql://username:password@localhost:5432/connectnow_db
+        SECRET_KEY=your_secure_secret_key
+        ```
 
-#
+5.  **Initialize the Database:**
+    *   Ensure your PostgreSQL server is running and the database `connectnow_db` exists.
+    *   Run the migration script (if available) or use the schema provided in `db.py` / `routes.py`.
+    ```bash
+    python migrate_db.py
+    ```
 
-![Screenshot 2023-12-28 at 11 45 53](https://github.com/mirayatech/Chatify/assets/71933266/8e32115d-e902-46c4-acc2-cdadd4023cbf)
+6.  **Run the Server:**
+    ```bash
+    python app.py
+    ```
+    *   The server will start at `http://localhost:5000`
 
-#
+### 2️⃣ Frontend Setup
 
-![Screenshot 2023-12-28 at 11 48 12](https://github.com/mirayatech/Chatify/assets/71933266/d4312f28-9208-4194-bece-805b642554bb)
+1.  **Navigate to the frontend directory:**
+    ```bash
+    cd ../Frontend
+    ```
 
-  
-#
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-![Screenshot 2023-12-28 at 11 48 35](https://github.com/mirayatech/Chatify/assets/71933266/2b7c6e2f-e67b-494b-9274-eba25a677efc)
+3.  **Run the Development Server:**
+    ```bash
+    npm run dev
+    ```
+    *   Access the app at `http://localhost:5173`
 
-#
+---
 
-![Screenshot 2023-12-28 at 11 52 06](https://github.com/mirayatech/Chatify/assets/71933266/0a233090-04e4-4a53-9959-d63b52d9831b)
+## 📸 Screenshots
 
-#
+*(Add your screenshots here: Login Screen, Chat Interface, Profile Page, etc.)*
 
-![Screenshot 2023-12-28 at 11 52 15](https://github.com/mirayatech/Chatify/assets/71933266/a0a7d6d8-b16e-45de-ad44-d66eafdc55df)
+---
 
+## 🔮 Future Enhancements
 
-#
+*   **Video Conferencing**: Integration of WebRTC for face-to-face calls.
+*   **AI Integration**: Smart suggestions and sentiment analysis.
+*   **Groups**: Enhanced group chat management with admin controls.
 
-![Screenshot 2023-12-28 at 11 53 01](https://github.com/mirayatech/Chatify/assets/71933266/041b4d98-4160-4d05-ad6a-2b9e8513258a)
+---
 
-#
-
-![Screenshot 2023-12-28 at 11 53 20](https://github.com/mirayatech/Chatify/assets/71933266/257803b9-b218-441e-a30a-ed915ebdeecd)
-
-
-#
-
-![Screenshot 2023-12-28 at 11 54 04](https://github.com/mirayatech/Chatify/assets/71933266/984fd811-9fbf-4e10-b7e7-b3f794124d46)
-
-
-</details>
-
-
-
+Made with ❤️ by [Your Name]

@@ -2,6 +2,7 @@ import { Skeleton } from "@mui/material";
 import { useState } from "react";
 import { FaChevronLeft } from "react-icons/fa6";
 import { MdGroups, MdInfo } from "react-icons/md";
+import { LuVideo } from "react-icons/lu";
 
 import { useTheme, useUserStore, useUsersInfo } from "../../../hooks";
 import { ConversationInfoType, IMAGE_PROXY } from "../../../library";
@@ -10,23 +11,22 @@ import { ViewMedia } from "../../Media/ViewMedia";
 import {
   Header,
   Wrapper,
-  SingleImage,
-  Relative,
-  ImagePrimary,
-  ImageSecondary,
   Name,
   Email,
   GroupButton,
   SettingButton,
+  VideoButton,
   HomeLink,
 } from "./Style";
 import { ChatViewGroup } from "../ChatViewGroup/ChatViewGroup";
 import { ChatConversationSettings } from "..";
+import { Avatar } from "../../Shared";
 
 type ChatHeaderProps = {
   conversation: ConversationInfoType;
+  onStartVideoCall?: () => void;
 };
-export function ChatHeader({ conversation }: ChatHeaderProps) {
+export function ChatHeader({ conversation, onStartVideoCall }: ChatHeaderProps) {
   const { data: users, loading } = useUsersInfo(conversation.users);
   const { currentUser } = useUserStore();
   const { theme } = useTheme();
@@ -56,26 +56,30 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
           ) : (
             <>
               {conversation.users.length === 2 ? (
-                <SingleImage
-                  src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
-                  alt=""
+                <Avatar
+                  src={filtered?.[0]?.data()?.photoURL ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL) : null}
+                  name={filtered?.[0]?.data()?.displayName || filtered?.[0]?.data()?.email || filtered?.[0]?.id || "?"}
+                  size="40px"
                 />
               ) : (
                 <>
                   {conversation?.group?.groupImage ? (
-                    <SingleImage src={conversation.group.groupImage} alt="" />
+                    <Avatar
+                      src={conversation.group.groupImage}
+                      name={conversation.group.groupName || "Group"}
+                      size="40px"
+                    />
                   ) : (
-                    <Relative>
-                      <ImagePrimary
-                        theme={theme}
-                        src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
-                        alt=""
-                      />
-                      <ImageSecondary
-                        src={IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)}
-                        alt=""
-                      />
-                    </Relative>
+                    <Avatar
+                      src={null}
+                      name={
+                        conversation?.group?.groupName ||
+                        filtered?.map((user) => user.data()?.displayName || user.data()?.email).join(", ") ||
+                        users?.map((user) => user.data?.()?.displayName || user.data?.()?.email || user.id).join(", ") ||
+                        "?"
+                      }
+                      size="40px"
+                    />
                   )}
                 </>
               )}
@@ -116,6 +120,14 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
                 <MdGroups />
               </GroupButton>
             )}
+
+            <VideoButton
+              theme={theme}
+              onClick={onStartVideoCall}
+              title="Start Video Call"
+            >
+              <LuVideo />
+            </VideoButton>
 
             <SettingButton
               theme={theme}

@@ -18,13 +18,6 @@ export const Flex = styled.div<StyledProps>`
     theme === "light" ? color.lightMode.border : color.darkMode.border};
 `;
 
-export const Image = styled.img`
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  margin-right: 10px;
-`;
-
 export const DeleteButton = styled.button`
   background: transparent;
   border: none;
@@ -54,8 +47,6 @@ export const Name = styled.p<StyledProps>`
     theme === "light" ? color.lightMode.title : color.darkMode.title};
 `;
 
-// ... keep existing ...
-
 export const LastMessage = styled.p<StyledProps>`
   color: ${({ theme }) =>
     theme === "light" ? color.lightMode.navText : color.darkMode.navText};
@@ -66,8 +57,6 @@ export const LastMessage = styled.p<StyledProps>`
   text-overflow: ellipsis;
   white-space: nowrap;
 `;
-
-// ... keep existing ...
 
 export const Notify = styled.div<StyledProps>`
   right: 20px;
@@ -80,28 +69,6 @@ export const Relative = styled.div`
   margin: 0 25px; /* Adjusted margin */
   position: relative;
   padding-right: 15px;
-`;
-
-export const ImagePrimary = styled.img`
-  top: -6px;
-  left: -35px; /* Adjusted */
-  z-index: 1;
-  width: 35px; /* Adjusted */
-  padding: 1px;
-  display: flex;
-  border-radius: 50%;
-  position: absolute;
-  align-items: center;
-  margin: 0 10px 2px 10px;
-  border: double 1px transparent;
-  background-clip: content-box, border-box;
-`;
-export const ImageSecondary = styled.img`
-  top: -25px; /* Adjusted */
-  left: -10px; /* Adjusted */
-  width: 40px; /* Adjusted */
-  border-radius: 50%;
-  position: absolute;
 `;
 
 export const MessageInfo = styled.div`
@@ -150,6 +117,3 @@ export const AvatarWrapper = styled.div`
   position: relative;
   flex-shrink: 0;
 `;
-
-
-

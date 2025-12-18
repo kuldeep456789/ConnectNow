@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
+from extensions import socketio
 import jwt
-import datetime
+from datetime import datetime
 import os
 import hashlib
 from db import get_db_connection
@@ -511,6 +512,9 @@ def send_message(current_user_id):
     conn.commit()
     cur.close()
     conn.close()
+
+    # Emit new-message event for real-time updates
+    socketio.emit('new-message', {'conversationId': conversation_id}, to=str(conversation_id))
 
     return jsonify({'status': 'sent'}), 201
 

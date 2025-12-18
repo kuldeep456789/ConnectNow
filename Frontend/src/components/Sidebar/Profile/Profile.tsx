@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import { useUserStore } from "../../../hooks";
 import {
   Thick,
-  Image,
   Text,
   Container,
   Wrapper,
@@ -19,8 +18,9 @@ import {
   RemoveButton,
 } from "./Style";
 import { Modal } from "../../Core";
-import { DEFAULT_AVATAR, IMAGE_PROXY, RANDOM_AVATAR } from "../../../library";
+import { IMAGE_PROXY } from "../../../library";
 import api from "../../../services/api";
+import { Avatar } from "../../Shared";
 
 type ProfileProps = {
   isOpen: boolean;
@@ -137,13 +137,10 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
     >
       <Container>
         <AvatarContainer>
-          <Image
-            src={
-              currentUser?.photoURL && currentUser.photoURL !== DEFAULT_AVATAR
-                ? IMAGE_PROXY(currentUser.photoURL)
-                : `${RANDOM_AVATAR}?username=${currentUser?.uid}`
-            }
-            alt="profile picture"
+          <Avatar
+            src={currentUser?.photoURL ? IMAGE_PROXY(currentUser.photoURL) : null}
+            name={currentUser?.displayName || currentUser?.email || "?"}
+            size="80px"
           />
 
           {isEditing && (

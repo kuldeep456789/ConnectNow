@@ -67,6 +67,10 @@ export const splitLinkFromMessage = (message: string) => {
 export const getInitials = (name: string) => {
   if (!name) return "";
   const names = name.split(" ");
-  if (names.length === 1) return names[0].charAt(0).toUpperCase();
+  if (names.length === 1) {
+    const word = names[0];
+    if (word.length === 1) return word.toUpperCase();
+    return (word.charAt(0) + word.charAt(word.length - 1)).toUpperCase();
+  }
   return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
 };

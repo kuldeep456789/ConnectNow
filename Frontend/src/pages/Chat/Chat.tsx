@@ -10,6 +10,9 @@ import { Sidebar } from "../../components/Sidebar/Sidebar";
 import { Wrapper, MobileHide, ChatWrapper, Text } from "./Style";
 import { Spinner } from "../../components/Core";
 import { ChatHeader, ChatInputSection, ChatView } from "../../components/Chat";
+import { VideoCallWindow } from "../../components/Chat/VideoCall/VideoCallWindow";
+import { socketService } from "../../services/socket";
+import { useEffect } from "react";
 
 export default function Chat() {
   const { id } = useParams();
@@ -31,6 +34,33 @@ export default function Chat() {
     `/messages/${id}`
   );
 
+  const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
+
+  useEffect(() => {
+    const socket = socketService.getSocket();
+    socket.emit("join-room", { room: id });
+
+    const handleIncomingSignal = (data: any) => {
+      if (data.signal.type === "offer") {
+        setIsVideoCallOpen(true);
+      }
+    };
+
+    const handleNewMessage = (data: any) => {
+      if (data.conversationId.toString() === id?.toString()) {
+        refetchMessages();
+      }
+    };
+
+    socket.on("signal", handleIncomingSignal);
+    socket.on("new-message", handleNewMessage);
+
+    return () => {
+      socket.off("signal", handleIncomingSignal);
+      socket.off("new-message", handleNewMessage);
+    };
+  }, [id]);
+
   return (
     <Wrapper theme={theme}>
       <MobileHide>
@@ -47,7 +77,10 @@ export default function Chat() {
           <Text theme={theme}>Conversation does not exist.</Text>
         ) : (
           <>
-            <ChatHeader conversation={conversation} />
+            <ChatHeader
+              conversation={conversation}
+              onStartVideoCall={() => setIsVideoCallOpen(true)}
+            />
             <ChatView
               replyInfo={replyInfo}
               setReplyInfo={setReplyInfo}
@@ -63,6 +96,13 @@ export default function Chat() {
               conversationId={id}
               refetch={refetchMessages}
             />
+
+            {isVideoCallOpen && id && (
+              <VideoCallWindow
+                room={id}
+                onClose={() => setIsVideoCallOpen(false)}
+              />
+            )}
           </>
         )}
       </ChatWrapper>

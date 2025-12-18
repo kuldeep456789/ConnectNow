@@ -2,6 +2,7 @@ import os
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
+from extensions import socketio
 from routes import api_bp
 from db import init_db
 
@@ -9,14 +10,43 @@ from db import init_db
 load_dotenv()
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
 
-# Configure CORS - Allow all origins for now (dev mode)
+# Configure CORS
 CORS(app)
+socketio.init_app(app)
 
 # Register Blueprints
 app.register_blueprint(api_bp, url_prefix='/api')
 
-# Static file serving for uploads (if using local storage)
+# --- Socket.io Signaling Handlers ---
+
+@socketio.on('join-room')
+def handle_join_room(data):
+    from flask_socketio import join_room
+    room = data.get('room')
+    if room:
+        join_room(room)
+        print(f"User joined room: {room}")
+
+@socketio.on('signal')
+def handle_signal(data):
+    from flask_socketio import emit
+    # Relay signal (offer, answer, candidate) to others in the room
+    room = data.get('room')
+    if room:
+        emit('signal', data, to=room, include_self=False)
+
+@socketio.on('gesture-action')
+def handle_gesture_action(data):
+    from flask_socketio import emit
+    # Broadcast gesture actions (emoji, msg triggers) to participants
+    room = data.get('room')
+    if room:
+        emit('gesture-action', data, to=room, include_self=False)
+
+
+# Static file serving for uploads
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -27,16 +57,14 @@ def uploaded_file(filename):
 
 @app.route('/')
 def index():
-    return "Chatify Backend is running!"
+    return "Chatify Backend with Signaling is running!"
 
 if __name__ == '__main__':
-    # Initialize DB table on startup (simple approach for MVP - ensuring tables exist locally)
-    # In production, we might run this via a separate command or keep it here if we want auto-init on start (careful with concurrency)
-    # For Render, better to use the build command or a pre-start script, but this doesn't hurt if idempotent.
     if os.environ.get('FLASK_ENV') == 'development':
         init_db()
     
     port = int(os.environ.get('PORT', 5000))
-    # Never run with debug=True in production!
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    
+    # Use socketio.run for real-time support
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode)

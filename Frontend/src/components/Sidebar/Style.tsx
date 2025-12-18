@@ -188,10 +188,7 @@ export const ChatButton = styled.button<StyledProps>`
   }
 `;
 
-export const ProfilePicture = styled.img`
-  width: 50px;
-  border-radius: 10%;
-`;
+
 
 export const SecondaryContainer = styled.div<StyledProps>`
   position: relative;
@@ -349,27 +346,7 @@ export const UserItem = styled.div<StyledProps>`
   }
 `;
 
-export const UserAvatar = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-`;
 
-export const UserAvatarPlaceholder = styled.div<{ theme: string }>`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.border : color.darkMode.border};
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.title : color.darkMode.title};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: bold;
-`;
 
 export const SidebarFooter = styled.div<StyledProps & { $collapsed?: boolean }>`
   z-index: 2;
