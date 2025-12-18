@@ -29,22 +29,22 @@ export const formatFileName = (name: string) => {
 
   const toKebabCase = (str: string) =>
     str
-      .normalize("NFD") // Normalize the base name
-      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
-      .replace(/đ/g, "d") // Replace special characters
+      .normalize("NFD") 
+      .replace(/[\u0300-\u036f]/g, "") 
+      .replace(/đ/g, "d") 
       .replace(/Đ/g, "D")
-      // eslint-disable-next-line no-useless-escape
-      .replace(/[^\w\s\-]/g, "") // Remove remaining non-word characters
-      .trim() // Remove leading and trailing spaces
-      .replace(/\s+/g, "-") // Replace spaces with hyphens
-      .toLowerCase(); // Convert to lowercase
+      
+      .replace(/[^\w\s\-]/g, "") 
+      .trim() 
+      .replace(/\s+/g, "-") 
+      .toLowerCase(); 
 
-  return `${Date.now()}-${toKebabCase(baseName)}.${fileExtension}`; // Append the file extension
+  return `${Date.now()}-${toKebabCase(baseName)}.${fileExtension}`; 
 };
 
 export const splitLinkFromMessage = (message: string) => {
   const URL_REGEX =
-    // eslint-disable-next-line no-useless-escape
+    
     /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/gm;
 
   const result = message.split(" ").reduce((acc, item) => {

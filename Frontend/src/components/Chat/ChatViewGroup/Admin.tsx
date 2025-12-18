@@ -21,7 +21,7 @@ type AdminProps = {
   conversation: ConversationInfoType;
 };
 export function Admin({ conversation, theme }: AdminProps) {
-  // const { id: conversationId } = useParams();
+  
 
   const currentUser = useUserStore((state) => state.currentUser);
 

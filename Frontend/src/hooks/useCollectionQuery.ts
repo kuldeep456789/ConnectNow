@@ -7,7 +7,7 @@ export const useCollectionQuery = (key: string, url: string) => {
   const [error, setError] = useState(false);
 
   const fetchData = async () => {
-    // setLoading(true); // Don't reset loading on refetch to avoid flicker
+    
     try {
       const response = await api.get(url);
       setData(response.data);

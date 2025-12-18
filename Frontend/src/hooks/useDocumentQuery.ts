@@ -11,7 +11,7 @@ export const useDocumentQuery = (key: string, url: string) => {
       setLoading(true);
       try {
         const response = await api.get(url);
-        // Adapting API response to component structure
+        
         setData({
           data: () => response.data,
           exists: () => true,

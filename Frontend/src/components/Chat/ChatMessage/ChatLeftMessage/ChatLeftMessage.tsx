@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState, Fragment } from "react";
 import { BsReply } from "react-icons/bs";
 import { FiSmile } from "react-icons/fi";

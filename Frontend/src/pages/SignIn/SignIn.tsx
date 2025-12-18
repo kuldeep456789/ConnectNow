@@ -110,9 +110,7 @@ export default function SignIn() {
           {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
         </p>
 
-        {/* <a href="https://github.com/mirayatech" target="_blank" style={{ marginTop: "20px" }}>
-          Built & D
-        </a> */}
+        {}
       </Wrapper>
     </Container>
   );

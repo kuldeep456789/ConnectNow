@@ -73,27 +73,27 @@ export function SelectConversation({
       </Flex>
     );
 
-  // Format last message for display
+  
   const formatLastMessage = () => {
     if (!conversation.lastMessage) return "No messages yet";
 
     const msg = conversation.lastMessage;
 
-    // Check if it's an image URL
+    
     if (msg.includes("/uploads/") && (msg.includes(".jpg") || msg.includes(".png") || msg.includes(".jpeg") || msg.includes(".gif"))) {
       return "📷 Photo";
     }
 
-    // Check if it's a file URL
+    
     if (msg.includes("/uploads/")) {
       return "📎 File";
     }
 
-    // Truncate text messages
+    
     return msg.length > 35 ? msg.slice(0, 35) + "..." : msg;
   };
 
-  // Format timestamp
+  
   const formatTimestamp = () => {
     if (!conversation.updatedAt) return "";
 
@@ -103,7 +103,7 @@ export function SelectConversation({
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-      // Today - show time
+      
       return msgDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } else if (diffDays === 1) {
       return "Yesterday";
@@ -114,7 +114,7 @@ export function SelectConversation({
     }
   };
 
-  // Duo Conversation
+  
   if (conversation.users?.length === 2 && theme)
     return (
       <Link to={`/${conversationId}`} style={{ textDecoration: "none" }}>
@@ -160,7 +160,7 @@ export function SelectConversation({
       </Link>
     );
 
-  // Group Conversation
+  
   return (
     <Link to={`/${conversationId}`} style={{ textDecoration: "none" }}>
       {theme && (

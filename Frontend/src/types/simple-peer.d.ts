@@ -45,4 +45,3 @@ declare module 'simple-peer' {
 
     export default Peer;
 }
-阻

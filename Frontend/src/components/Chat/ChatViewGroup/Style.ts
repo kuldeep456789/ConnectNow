@@ -114,7 +114,7 @@ export const Button = styled.button<StyledProps & { $isActive?: boolean }>`
   }
 `;
 
-// MEMBERS
+
 
 export const MemberContainer = styled.div`
   gap: 25px;

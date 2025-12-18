@@ -23,7 +23,7 @@ type AddMembersProps = {
 };
 
 export function AddMembers({ conversations, theme }: AddMembersProps) {
-  // const { id: conversationId } = useParams();
+  
   const [data, setData] = useState<{ docs: any[], empty: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -31,14 +31,14 @@ export function AddMembers({ conversations, theme }: AddMembersProps) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // Fetch all users and filter out existing members
+        
         const res = await api.get('/users/search?q=');
         const allUsers = res.data;
         const existingUids = new Set(conversations.users);
         const availableUsers = allUsers.filter((u: any) => !existingUids.has(u.uid));
 
         setData({
-          docs: availableUsers.map((u: any) => ({ data: () => u })), // Mocking doc structure
+          docs: availableUsers.map((u: any) => ({ data: () => u })), 
           empty: availableUsers.length === 0
         });
         setLoading(false);

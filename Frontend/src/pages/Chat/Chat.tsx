@@ -26,7 +26,7 @@ export default function Chat() {
   const { currentUser } = useUserStore();
   const [replyInfo, setReplyInfo] = useState<ReplyInfoType | null>(null);
 
-  // Fallback for conversation check if structure mismatches
+  
   const hasAccess = conversation?.users?.includes(currentUser?.uid as string);
 
   const { data: messagesList, loading: msgLoading, error: msgError, refetch: refetchMessages } = useCollectionQuery(

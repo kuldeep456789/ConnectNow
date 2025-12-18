@@ -15,7 +15,7 @@ export function ImageItem() {
     const fetchImages = async () => {
       try {
         const res = await api.get(`/messages/${conversationId}`);
-        // Filter for images
+        
         const imgMsgs = res.data.filter((msg: any) => msg.type === 'image');
         setImages(imgMsgs);
         setLoading(false);

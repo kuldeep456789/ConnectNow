@@ -22,7 +22,7 @@ export function Files({ theme }: FilesProps) {
     const fetchFiles = async () => {
       try {
         const res = await api.get(`/messages/${conversationId}`);
-        // Filter for files
+        
         const fileMsgs = res.data.filter((msg: any) => msg.type === 'file');
         setFiles(fileMsgs);
         setLoading(false);

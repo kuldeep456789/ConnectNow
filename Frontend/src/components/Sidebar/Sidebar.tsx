@@ -62,7 +62,7 @@ export function Sidebar() {
     "/conversations"
   );
 
-  // Fetch all users
+  
   useState(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
@@ -90,28 +90,28 @@ export function Sidebar() {
     setIsSettingOpen(false);
   };
 
-  // Handle user click to start conversation
+  
   const handleUserClick = async (user: any) => {
     try {
-      // Check if conversation already exists
+      
       const existingConv = data?.find((conv: any) => {
         return conv.users?.length === 2 && conv.users?.includes(user.uid);
       });
 
       if (existingConv) {
-        // Navigate to existing conversation
+        
         navigate(`/${existingConv.conversationId}`);
       } else {
-        // Create new conversation
+        
         const res = await api.post("/conversations", {
           users: [user.uid],
           group: null,
         });
 
-        // Refetch conversations to update the list
+        
         refetch && refetch();
 
-        // Navigate to new conversation
+        
         navigate(`/${res.data.conversationId}`);
         toast.success(`Started conversation with ${user.displayName}`);
       }
@@ -121,7 +121,7 @@ export function Sidebar() {
     }
   };
 
-  // Filter and search conversations
+  
   const filteredConversations = useMemo(() => {
     if (!data) return [];
 
@@ -131,7 +131,7 @@ export function Sidebar() {
 
 
 
-    // Sort by most recent
+    
     filtered.sort((a: any, b: any) => {
       const aTime = a.updatedAt?.seconds || 0;
       const bTime = b.updatedAt?.seconds || 0;
@@ -141,11 +141,11 @@ export function Sidebar() {
     return filtered;
   }, [data, currentUser]);
 
-  // Filter users based on search
+  
   const filteredUsers = useMemo(() => {
     if (!allUsers) return [];
 
-    // Exclude current user
+    
     const filtered = allUsers.filter((user: any) => user.uid !== currentUser?.uid);
     return filtered;
   }, [allUsers, currentUser]);
@@ -154,12 +154,12 @@ export function Sidebar() {
 
   const handlePlusClick = () => {
     if (collapsed) setCollapsed(false);
-    // Modal open logic is handled by state, but if we wanted to focus search it would be here
-    // For now, adhering to User Request to just open modal or whatever was requested.
-    // Actually user asked for "plus icon people in sidebar", implying search focus?
-    // "when i clicked they slightly hide on left side" - sidebar collapse
-    // "remove in sidebar , search bar" - Wait, user ASKED TO REMOVE SEARCH BAR in previous step.
-    // So Plus button probably just opens modal now.
+    
+    
+    
+    
+    
+    
     setConversationModalOpen(true);
   };
 
@@ -216,7 +216,7 @@ export function Sidebar() {
 
 
 
-      {/* Conversations Section */}
+      {}
       {loading ? (
         <Spinner />
       ) : error ? (
@@ -238,7 +238,7 @@ export function Sidebar() {
         </SelectConversationContainer>
       ) : null}
 
-      {/* All Users / Contacts Section */}
+      {}
       <ContactsSection theme={theme} $collapsed={collapsed}>
         <SectionTitle theme={theme}>
           All Contacts

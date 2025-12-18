@@ -25,7 +25,7 @@ export const ToggleButton = styled.button<StyledProps>`
 export const StyledSideBar = styled.div<StyledProps & { $collapsed?: boolean }>`
   width: 100%;
   height: 100vh;
-  padding-bottom: 80px; /* Space for footer */
+  padding-bottom: 80px; 
   overflow-x: hidden;
   overflow-y: auto;
   border-right: none;

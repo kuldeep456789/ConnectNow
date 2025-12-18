@@ -31,9 +31,9 @@ export function ChatConversationSettings({
   conversation,
   theme,
 }: ConversationSettingsProps) {
-  // const { id: conversationId } = useParams();
-  // const { currentUser } = useUserStore();
-  // const navigate = useNavigate();
+  
+  
+  
 
   const [isChangeChatNameOpen, setIsChangeChatNameOpen] = useState(false);
   const [chatNameInputValue, setChatNameInputValue] = useState(
@@ -47,9 +47,9 @@ export function ChatConversationSettings({
     if (!chatNameInputValue.trim()) return;
     setIsOpen(false);
 
-    // TODO: Implement update group name API
+    
     toast.error("Update group name not implemented in MVP backend");
-    // logic would be: await api.put(`/conversations/${conversationId}`, { groupName: chatNameInputValue });
+    
   };
 
   const handleFileInputChange = async (
@@ -75,18 +75,18 @@ export function ChatConversationSettings({
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // TODO: Update group image endpoint
+      
       toast.error("Update group image not implemented in MVP backend");
-      // URL is res.data.url
+      
     } catch (error) {
       toast.error("Upload failed");
     }
   };
 
   const leaveGroup = async () => {
-    // TODO: Leave group API
+    
     toast.error("Leave group not implemented in MVP backend");
-    // navigate("/");
+    
   };
 
   const onSingleMediaClick = () => {

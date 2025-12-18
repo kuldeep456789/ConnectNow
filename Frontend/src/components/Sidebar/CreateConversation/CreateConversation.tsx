@@ -39,7 +39,7 @@ export function CreateConversation({
   const navigate = useNavigate();
 
   const handleToggle = (uid: string) => {
-    // Single select for now
+    
     if (selected.includes(uid)) {
       setSelected([]);
     } else {
@@ -90,7 +90,7 @@ export function CreateConversation({
                   onClick={() => handleToggle(user.uid)}
                 >
                   <CheckBox
-                    type="radio" // using radio for single select visual
+                    type="radio" 
                     style={{ cursor: "pointer" }}
                     checked={selected.includes(user.uid)}
                     readOnly

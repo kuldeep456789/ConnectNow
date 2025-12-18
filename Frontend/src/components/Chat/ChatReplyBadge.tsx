@@ -4,10 +4,10 @@ type ReplyBadgeProps = {
   messageId: string;
 };
 export function ChatReplyBadge({ messageId }: ReplyBadgeProps) {
-  // TODO: Fetch single message by ID
+  
   const loading = false;
   const error = false;
-  // Mock data
+  
   const data = {
     data: () => ({ type: 'text', content: 'Replying to message...' })
   };

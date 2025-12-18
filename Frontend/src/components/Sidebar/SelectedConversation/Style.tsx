@@ -66,7 +66,7 @@ export const Notify = styled.div<StyledProps>`
 `;
 
 export const Relative = styled.div`
-  margin: 0 25px; /* Adjusted margin */
+  margin: 0 25px; 
   position: relative;
   padding-right: 15px;
 `;

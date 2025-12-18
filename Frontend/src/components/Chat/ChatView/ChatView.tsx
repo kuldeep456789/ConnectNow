@@ -34,7 +34,7 @@ export function ChatView({
   const isWindowFocus = useRef(true);
 
   useEffect(() => {
-    // Scroll to bottom on new messages
+    
     if (scrollBottomRef.current) {
       scrollBottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -43,7 +43,7 @@ export function ChatView({
   useEffect(() => {
     const focusHandler = () => {
       isWindowFocus.current = true;
-      // Mark seen logic here if implemented on backend
+      
     };
 
     const blurHandler = () => {
@@ -83,7 +83,7 @@ export function ChatView({
   return (
     <StylesChatView theme={theme}>
       {data.map((item: any, index: number) => {
-        // Normalize item structure from backend to what components expect
+        
         const message = {
           id: item.id,
           sender: item.senderId,
@@ -109,11 +109,11 @@ export function ChatView({
                 setReplyInfo={setReplyInfo}
                 message={message}
                 index={index}
-                docs={data} // Passing full array instead of docs
+                docs={data} 
                 conversation={conversation}
               />
             )}
-            {/* Seen status visualization removed for MVP as backend doesn't support it yet */}
+            {}
           </Fragment>
         )
       })}

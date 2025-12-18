@@ -26,7 +26,7 @@ export default function ChatReactPopUp({
   const updateReaction = async (value: string) => {
     try {
       await api.post(`/messages/${messageId}/reactions`, { reaction: value });
-      window.location.reload(); // Brute force refresh for MVP
+      window.location.reload(); 
     } catch (error) {
       toast.error("Failed to update reaction");
     }
@@ -44,9 +44,9 @@ export default function ChatReactPopUp({
           <button
             key={key}
             onClick={() => {
-              if (key === currentReaction) updateReaction(key); // Toggle logic handled in backend actually, but here we just send key. Backend toggles if same. 
-              // Actually my backend logic: if same, removed. If diff, updated.
-              // So I just send the key. 
+              if (key === currentReaction) updateReaction(key); 
+              
+              
               updateReaction(key);
             }}
             className={key === currentReaction ? "current-reaction" : ""}

@@ -1,13 +1,13 @@
 export const IMAGE_PROXY = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http") || url.startsWith("https")) return url;
-  return `http://localhost:5000${url}`;
+  return `http:
 };
 
 export const FILE_ICON = (extension: string) =>
-  `https://cdn.jsdelivr.net/gh/napthedev/file-icons/file/${extension}.svg`;
+  `https:
 
-// Default avatar removed in favor of dynamic initials
+
 export const DEFAULT_AVATAR = "";
 export const RANDOM_AVATAR = "";
 

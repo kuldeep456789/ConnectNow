@@ -58,7 +58,7 @@ export const Button = styled.button<StyledProps & { $isActive?: boolean }>`
   }
 `;
 
-// Images
+
 
 export const Image = styled.img`
   width: 150px;
@@ -71,7 +71,7 @@ export const Grid = styled.div`
   grid-template-columns: repeat(2, 150px);
 `;
 
-// Files
+
 
 export const FileWrapper = styled.a<StyledProps>`
   gap: 10px;

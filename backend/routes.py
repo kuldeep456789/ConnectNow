@@ -13,7 +13,6 @@ api_bp = Blueprint('api', __name__)
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key')
 
-# --- Middleware ---
 
 def token_required(f):
     @wraps(f)
@@ -36,7 +35,6 @@ def token_required(f):
         return f(current_user_id, *args, **kwargs)
     return decorated
 
-# --- Auth Routes ---
 
 @api_bp.route('/auth/signup', methods=['POST'])
 def signup():
@@ -48,10 +46,8 @@ def signup():
     if not email or not password:
         return jsonify({'message': 'Email and password are required'}), 400
 
-    # Simple password hashing (SHA256) - In production use bcrypt/scrypt!
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     
-    # Generate a UID (pseudo-random or based on data)
     uid = hashlib.md5(email.encode()).hexdigest()
 
     conn = get_db_connection()
@@ -88,22 +84,20 @@ def login():
     if not conn:
         return jsonify({'message': 'Database connection failed'}), 500
 
-    cur = conn.cursor(cursor_factory=RealDictCursor if 'RealDictCursor' in globals() else None)
-    # Note: RealDictCursor needs to be imported if we want dict like access, else tuple
-    # For now let's manually map or just checking existence
+    cur = conn.cursor()
     cur.execute("SELECT id, uid, email, display_name, photo_url FROM users WHERE email = %s AND password_hash = %s", (email, password_hash))
     user = cur.fetchone()
     cur.close()
     conn.close()
 
     if user:
-        # User found (user is a tuple: (id, uid, email, ...))
-        # If RealDictCursor was used it would be a dict. 
-        # By default psycopg2 returns tuples. Let's assume standard cursor for safety without extra import in this file context,
-        # but wait, I can import it.
-        # However, for simplicity let's just use the ID.
+
+
+
+
+
         
-        # User tuple index: 0=id, 1=uid
+
         user_id = user[0]
         user_uid = user[1]
         
@@ -125,7 +119,7 @@ def login():
     
     return jsonify({'message': 'Invalid credentials'}), 401
 
-# --- User Routes ---
+
 
 @api_bp.route('/users/me', methods=['GET'])
 @token_required
@@ -165,7 +159,7 @@ def update_profile(current_user_id):
     try:
         cur = conn.cursor()
         
-        # Build dynamic UPDATE query based on provided fields
+
         update_fields = []
         params = []
         
@@ -216,7 +210,7 @@ def search_users(current_user_id):
     if not query:
         cur.execute("SELECT uid, email, display_name, photo_url FROM users ORDER BY created_at DESC LIMIT 50")
     else:
-        # Simple case-insensitive search
+
         cur.execute("SELECT uid, email, display_name, photo_url FROM users WHERE email ILIKE %s OR display_name ILIKE %s", (f'%{query}%', f'%{query}%'))
     
     users = cur.fetchall()
@@ -246,7 +240,7 @@ def get_users_batch(current_user_id):
     if not conn:
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
-    # Use ANY for array check
+
     cur.execute("SELECT uid, email, display_name, photo_url FROM users WHERE uid = ANY(%s)", (uids,))
     users = cur.fetchall()
     cur.close()
@@ -262,20 +256,20 @@ def get_users_batch(current_user_id):
         })
     return jsonify(result)
 
-# --- Conversation Routes ---
+
 
 @api_bp.route('/conversations', methods=['POST'])
 @token_required
 def create_conversation(current_user_id):
     data = request.get_json()
-    recipient_uid = data.get('recipientUid') # We expect UID from frontend
+    recipient_uid = data.get('recipientUid')
 
     conn = get_db_connection()
     if not conn:
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
 
-    # Get recipient ID
+
     cur.execute("SELECT id FROM users WHERE uid = %s", (recipient_uid,))
     recipient = cur.fetchone()
     
@@ -284,8 +278,8 @@ def create_conversation(current_user_id):
     
     recipient_id = recipient[0]
 
-    # Check if conversation already exists (TODO: optimized query)
-    # For now, create new
+
+
     cur.execute("INSERT INTO conversations (last_message) VALUES ('') RETURNING id")
     conversation_id = cur.fetchone()[0]
 
@@ -306,7 +300,7 @@ def get_conversations(current_user_id):
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
-    # Get all conversation IDs for the user
+
     cur.execute("""
         SELECT c.id, c.last_message, c.updated_at 
         FROM conversations c
@@ -320,7 +314,7 @@ def get_conversations(current_user_id):
     
     for conv in conversations:
         conv_id = conv[0]
-        # Get other participant info
+
         cur.execute("""
             SELECT u.uid, u.email, u.display_name, u.photo_url
             FROM users u
@@ -357,7 +351,7 @@ def get_conversation_details(current_user_id, conversation_id):
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
-    # Check participation
+
     cur.execute("SELECT 1 FROM conversation_participants WHERE conversation_id = %s AND user_id = %s", (conversation_id, current_user_id))
     if not cur.fetchone():
         return jsonify({'message': 'Unauthorized'}), 403
@@ -368,7 +362,7 @@ def get_conversation_details(current_user_id, conversation_id):
     if not conv:
         return jsonify({'message': 'Conversation not found'}), 404
 
-    # Get other participants (assuming 1-on-1 for now, or list all)
+
     cur.execute("""
         SELECT u.uid, u.email, u.display_name, u.photo_url
         FROM users u
@@ -379,8 +373,8 @@ def get_conversation_details(current_user_id, conversation_id):
     participants = cur.fetchall()
     users_info = []
     
-    # Find the "other" user for UI display (for 1:1)
-    # Also return list of UIDs for standard checking
+
+
     participant_uids = []
     
     for p in participants:
@@ -398,7 +392,7 @@ def get_conversation_details(current_user_id, conversation_id):
     return jsonify({
         'conversationId': conv[0],
         'lastMessage': conv[1],
-        'users': participant_uids, # For compatibility with frontend check
+        'users': participant_uids,
         'participants': users_info
     })
 
@@ -410,15 +404,15 @@ def delete_conversation(current_user_id, conversation_id):
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
-    # Check participation
+
     cur.execute("SELECT 1 FROM conversation_participants WHERE conversation_id = %s AND user_id = %s", (conversation_id, current_user_id))
     if not cur.fetchone():
         return jsonify({'message': 'Unauthorized'}), 403
 
-    # Delete conversation (Cascade should handle participants and messages if configured, 
-    # but let's be explicit or assume cascade for now. 
-    # Actually, usually safe to delete dependent rows first or rely on FK cascade.
-    # Assuming FK cascade is NOT guaranteed, I'll delete manually for safety.)
+
+
+
+
     
     try:
         cur.execute("DELETE FROM messages WHERE conversation_id = %s", (conversation_id,))
@@ -435,7 +429,7 @@ def delete_conversation(current_user_id, conversation_id):
 
     return jsonify({'message': 'Conversation deleted successfully'}), 200
 
-# --- Message Routes ---
+
 
 @api_bp.route('/messages/<int:conversation_id>', methods=['GET'])
 @token_required
@@ -445,7 +439,7 @@ def get_messages(current_user_id, conversation_id):
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
-    # Check participation
+
     cur.execute("SELECT 1 FROM conversation_participants WHERE conversation_id = %s AND user_id = %s", (conversation_id, current_user_id))
     if not cur.fetchone():
         return jsonify({'message': 'Unauthorized'}), 403
@@ -461,18 +455,18 @@ def get_messages(current_user_id, conversation_id):
     messages = cur.fetchall()
     result = []
     for msg in messages:
-        # msg: 0=id, 1=sender_id, 2=content, 3=type, 4=created_at, 5=uid, 6=reply_to, 7=reactions, 8=is_deleted, 9=file_meta
+
         
-        # Determine actual replyTo ID (if it exists, we might need to fetch the referenced message ID or just pass the ID)
-        # Frontend expects 'replyTo' as string ID or object? 
-        # Usually frontend expects an ID to find it in the list.
-        # Let's check frontend ReplyInfoType usage.
+
+
+
+
         
         result.append({
             'id': msg[0],
             'senderId': msg[5],
             'content': msg[2],
-            'type': msg[8] and 'removed' or msg[3], # If deleted, type is removed
+            'type': msg[8] and 'removed' or msg[3],
             'createdAt': msg[4].isoformat(),
             'replyTo': msg[6],
             'reactions': msg[7],
@@ -500,25 +494,25 @@ def send_message(current_user_id):
     reply_to = data.get('replyTo')
     file_meta = data.get('file', None)
 
-    # Insert message
+
     cur.execute(
         "INSERT INTO messages (conversation_id, sender_id, content, type, reply_to, file_meta) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
         (conversation_id, current_user_id, content, msg_type, reply_to, Json(file_meta) if file_meta else None)
     )
     
-    # Update conversation last message
+
     cur.execute("UPDATE conversations SET last_message = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s", (content, conversation_id))
 
     conn.commit()
     cur.close()
     conn.close()
 
-    # Emit new-message event for real-time updates
+
     socketio.emit('new-message', {'conversationId': conversation_id}, to=str(conversation_id))
 
     return jsonify({'status': 'sent'}), 201
 
-# --- File Upload ---
+
 @api_bp.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -529,15 +523,15 @@ def upload_file():
     
     if file:
         filename = secure_filename(file.filename)
-        # Unique filename
+
         import uuid
         ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
         new_filename = f"{uuid.uuid4()}.{ext}"
         save_path = os.path.join(os.getcwd(), 'uploads', new_filename)
         file.save(save_path)
         
-        # Return URL (assuming localhost for now)
-        # In prod this should be the full domain or relative path handled by frontend
+
+
         return jsonify({'url': f"/uploads/{new_filename}"})
 
     return jsonify({'message': 'Upload failed'}), 500
@@ -550,17 +544,17 @@ def delete_message(current_user_id, message_id):
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
-    # Check ownership
+
     cur.execute("SELECT sender_id FROM messages WHERE id = %s", (message_id,))
     msg = cur.fetchone()
     if not msg:
         return jsonify({'message': 'Message not found'}), 404
         
-    if msg[0] != current_user_id: # Assuming simple ID match or strict type check
-        # msg[0] is int, current_user_id is passed from token_required, which returns int ID.
+    if msg[0] != current_user_id:
+
         return jsonify({'message': 'Unauthorized'}), 403
 
-    # Soft delete
+
     cur.execute("UPDATE messages SET is_deleted = TRUE WHERE id = %s", (message_id,))
     conn.commit()
     cur.close()
@@ -572,18 +566,18 @@ def delete_message(current_user_id, message_id):
 @token_required
 def toggle_reaction(current_user_id, message_id):
     data = request.get_json()
-    reaction = data.get('reaction') # Expecting string e.g. "Like"
+    reaction = data.get('reaction')
     
     conn = get_db_connection()
     if not conn:
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
-    # Get current users uid to use as key in JSONB
+
     cur.execute("SELECT uid FROM users WHERE id = %s", (current_user_id,))
     user_uid = cur.fetchone()[0]
 
-    # Get current reactions
+
     cur.execute("SELECT reactions FROM messages WHERE id = %s", (message_id,))
     res = cur.fetchone()
     if not res:
@@ -591,13 +585,13 @@ def toggle_reaction(current_user_id, message_id):
     
     current_reactions = res[0] or {}
     
-    # Toggle logic: if user already has this reaction, remove it? Or update it?
-    # Requirement: "React to a message". Usually if same reaction, remove.
-    # Logic: 
-    # if user_uid in current_reactions AND current_reactions[user_uid] == reaction:
-    #    del current_reactions[user_uid]
-    # else:
-    #    current_reactions[user_uid] = reaction
+
+
+
+
+
+
+
     
     if current_reactions.get(user_uid) == reaction:
         del current_reactions[user_uid]

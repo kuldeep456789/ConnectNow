@@ -25,7 +25,7 @@ export const useVideoCall = (room: string) => {
     const socket = socketService.getSocket();
 
     useEffect(() => {
-        // Join room for signaling
+        
         socket.emit("join-room", { room });
 
         socket.on("signal", (data: { signal: SignalData; from: string }) => {

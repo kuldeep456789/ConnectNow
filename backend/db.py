@@ -19,7 +19,6 @@ def init_db():
     try:
         cur = conn.cursor()
         
-        # Create Users Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -32,12 +31,6 @@ def init_db():
             );
         """)
 
-        # Create Conversations Table
-        # For simplicity, we'll store participant IDs in a text array or JSONB, 
-        # but for a relational DB, a join table is better. 
-        # Sticking to a simpler JSONB approach for "participants" to mimic the NoSQL structure slightly for ease,
-        # OR better: a normalized design.
-        # Let's go normalized: conversations table + conversation_participants table.
         
         cur.execute("""
             CREATE TABLE IF NOT EXISTS conversations (
@@ -55,7 +48,6 @@ def init_db():
             );
         """)
 
-        # Create Messages Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS messages (
                 id SERIAL PRIMARY KEY,

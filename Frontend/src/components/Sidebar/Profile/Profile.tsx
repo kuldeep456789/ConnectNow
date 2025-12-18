@@ -56,10 +56,10 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
 
       const photoURL = uploadRes.data.url;
 
-      // Update profile with new photo
+      
       const profileRes = await api.put("/profile", { photoURL });
 
-      // Update local state
+      
       setCurrentUser({
         ...currentUser,
         photoURL: profileRes.data.user.photoURL,
@@ -79,10 +79,10 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
 
     setUploading(true);
     try {
-      // Update profile with empty photoURL
+      
       const profileRes = await api.put("/profile", { photoURL: "" });
 
-      // Update local state
+      
       setCurrentUser({
         ...currentUser,
         photoURL: profileRes.data.user.photoURL,
@@ -107,7 +107,7 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
     try {
       const res = await api.put("/profile", { displayName });
 
-      // Update local state
+      
       setCurrentUser({
         ...currentUser,
         displayName: res.data.user.displayName,

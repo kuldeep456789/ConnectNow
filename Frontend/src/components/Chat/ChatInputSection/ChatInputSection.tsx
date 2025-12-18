@@ -120,14 +120,14 @@ export function ChatInputSection({
         type: "text",
         replyTo: replyInfo?.id
       });
-      // We rely on polling or refetching in ChatView. 
-      // Ideally we should update the UI optimistically or trigger a refetch.
-      // For MVP, if ChatView polls or re-renders, it appears.
-      // But since we removed realtime listener, we might need to manually trigger refresh?
-      // useCollectionQuery in ChatView has no polling built-in yet.
-      // We should add polling or a refresh signal.
-      setInputValue(""); // Clear input immediately
-      refetch && refetch(); // Refetch messages
+      
+      
+      
+      
+      
+      
+      setInputValue(""); 
+      refetch && refetch(); 
     } catch (error) {
       toast.error("Failed to send message");
     }
@@ -149,10 +149,10 @@ export function ChatInputSection({
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      // Send message with file URL
+      
       await api.post("/messages", {
         conversationId: conversationId,
-        content: res.data.url, // URL from backend
+        content: res.data.url, 
         type: file.type.startsWith("image") ? "image" : "file",
         replyTo: replyInfo?.id,
         file: {
@@ -184,9 +184,9 @@ export function ChatInputSection({
     setPreviewFiles([...previewFiles, url]);
   };
 
-  // Drag and drop handlers simplified...
-  // (Assuming logic is similar, just omitted for brevity updates or keeping existing)
-  // I'll keep the existing listeners but use the new uploadFile
+  
+  
+  
 
   useEffect(() => {
     const dragBlurHandler = (event: DragEvent) => {

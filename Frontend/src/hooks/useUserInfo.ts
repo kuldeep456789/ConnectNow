@@ -10,11 +10,11 @@ export const useUsersInfo = (userIds: string[]) => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      // Check cache first
+      
       const toFetch = (userIds || []).filter(id => !cache[id]);
 
       if (toFetch.length === 0) {
-        setData(userIds.map(id => ({ data: () => cache[id], id: cache[id]?.uid }))); // Mocking .data() logic if needed or just return dict
+        setData(userIds.map(id => ({ data: () => cache[id], id: cache[id]?.uid }))); 
         setLoading(false);
         return;
       }
@@ -27,11 +27,11 @@ export const useUsersInfo = (userIds: string[]) => {
           cache[user.uid] = user;
         });
 
-        // Reconstruct full list
+        
         const fullList = userIds.map(id => {
           const user = cache[id];
-          // Mocking Firestore snapshot shape somewhat or just return data
-          // ChatHeader expects: user.data()?.photoURL
+          
+          
           return {
             data: () => user,
             id: user?.uid

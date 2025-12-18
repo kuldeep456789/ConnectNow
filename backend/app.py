@@ -6,20 +6,15 @@ from extensions import socketio
 from routes import api_bp
 from db import init_db
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
 
-# Configure CORS
 CORS(app)
 socketio.init_app(app)
 
-# Register Blueprints
 app.register_blueprint(api_bp, url_prefix='/api')
-
-# --- Socket.io Signaling Handlers ---
 
 @socketio.on('join-room')
 def handle_join_room(data):
@@ -32,7 +27,6 @@ def handle_join_room(data):
 @socketio.on('signal')
 def handle_signal(data):
     from flask_socketio import emit
-    # Relay signal (offer, answer, candidate) to others in the room
     room = data.get('room')
     if room:
         emit('signal', data, to=room, include_self=False)
@@ -40,13 +34,10 @@ def handle_signal(data):
 @socketio.on('gesture-action')
 def handle_gesture_action(data):
     from flask_socketio import emit
-    # Broadcast gesture actions (emoji, msg triggers) to participants
     room = data.get('room')
     if room:
         emit('gesture-action', data, to=room, include_self=False)
 
-
-# Static file serving for uploads
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -66,5 +57,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
     
-    # Use socketio.run for real-time support
     socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode)

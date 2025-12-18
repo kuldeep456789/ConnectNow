@@ -55,7 +55,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
         };
     }, [room]);
 
-    // Frame processing loop
+    
     useEffect(() => {
         let animationFrameId: number;
         const loop = async () => {
@@ -69,7 +69,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
         return () => cancelAnimationFrame(animationFrameId);
     }, [landmarks, boundingBox]);
 
-    // Handle gesture actions
+    
     useEffect(() => {
         if (gesture && gesture !== lastGestureRef.current) {
             handleGestureAction(gesture);
@@ -90,7 +90,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Bounding Box (Deeport Style)
+        
         if (boundingBox) {
             ctx.strokeStyle = "#646cff";
             ctx.lineWidth = 3;
@@ -103,7 +103,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             );
             ctx.stroke();
 
-            // Bounding Box Label
+            
             ctx.fillStyle = "#646cff";
             ctx.font = "bold 14px Arial";
             ctx.fillText(
@@ -113,7 +113,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             );
         }
 
-        // Draw Landmarks (Skeleton)
+        
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 1;
@@ -123,14 +123,14 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             ctx.fill();
         });
 
-        // Draw skeleton connections
+        
         const connections = [
-            [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
-            [0, 5], [5, 6], [6, 7], [7, 8], // Index
-            [5, 9], [9, 10], [10, 11], [11, 12], // Middle
-            [9, 13], [13, 14], [14, 15], [15, 16], // Ring
-            [13, 17], [17, 18], [18, 19], [19, 20], // Pinky
-            [0, 17] // Palm
+            [0, 1], [1, 2], [2, 3], [3, 4], 
+            [0, 5], [5, 6], [6, 7], [7, 8], 
+            [5, 9], [9, 10], [10, 11], [11, 12], 
+            [9, 13], [13, 14], [14, 15], [15, 16], 
+            [13, 17], [17, 18], [18, 19], [19, 20], 
+            [0, 17] 
         ];
         ctx.beginPath();
         connections.forEach(([s, e]) => {

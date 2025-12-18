@@ -21,16 +21,12 @@ def migrate_db():
     try:
         cur = conn.cursor()
         
-        # Add reply_to column
         cur.execute("ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_to INTEGER;")
         
-        # Add reactions column (JSONB)
         cur.execute("ALTER TABLE messages ADD COLUMN IF NOT EXISTS reactions JSONB DEFAULT '{}'::jsonb;")
         
-        # Add is_deleted column
         cur.execute("ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;")
         
-        # Add file_meta column (JSONB) for file name/size
         cur.execute("ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_meta JSONB DEFAULT NULL;")
 
         conn.commit()

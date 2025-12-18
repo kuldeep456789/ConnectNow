@@ -8,7 +8,7 @@ export interface BoundingBox {
     height: number;
 }
 
-// Gesture classification logic
+
 const classifyGesture = (landmarks: any[]) => {
     if (!landmarks || landmarks.length === 0) return null;
 
@@ -28,7 +28,7 @@ const classifyGesture = (landmarks: any[]) => {
     return null;
 };
 
-// Calculate bounding box from landmarks
+
 const getBoundingBox = (landmarks: any[]): BoundingBox => {
     let minX = 1, minY = 1, maxX = 0, maxY = 0;
     landmarks.forEach(lm => {
@@ -53,7 +53,7 @@ export const useHandGestures = () => {
 
     useEffect(() => {
         const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
         });
 
         hands.setOptions({

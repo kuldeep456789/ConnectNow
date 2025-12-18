@@ -23,13 +23,13 @@ type MembersProps = {
 };
 
 export const Members = ({ conversation, theme }: MembersProps) => {
-  // const { id: conversationId } = useParams();
+  
 
   const currentUser = useUserStore((state) => state.currentUser);
 
   const { data, loading, error } = useUsersInfo(conversation.users);
 
-  // const navigate = useNavigate();
+  
 
   const handleRemoveFromGroup = (_uid: string) => {
     toast.error("Remove from group not implemented in MVP");
