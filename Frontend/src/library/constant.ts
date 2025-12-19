@@ -1,16 +1,15 @@
 export const IMAGE_PROXY = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http") || url.startsWith("https")) return url;
-  return `http:
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  return `${baseUrl}/uploads/${url}`;
 };
 
 export const FILE_ICON = (extension: string) =>
-  `https:
-
+  `https://img.icons8.com/color/48/${extension}.png`;
 
 export const DEFAULT_AVATAR = "";
 export const RANDOM_AVATAR = "";
-
 
 export const REACTIONS_UI: {
   [key: string]: {
@@ -47,3 +46,4 @@ export const REACTIONS_UI: {
     gif: "/reactions/gif/angry.gif",
   },
 };
+

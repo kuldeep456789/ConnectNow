@@ -8,7 +8,7 @@ export default function Home() {
     <Wrapper>
       <Sidebar />
       <HomeWrapper theme={theme}>
-        <Text theme={theme}>Select a conversation to start chatting.</Text>
+        <Text theme={theme}>Conversation to start chatting.</Text>
       </HomeWrapper>
     </Wrapper>
   );

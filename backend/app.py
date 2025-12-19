@@ -48,7 +48,7 @@ def uploaded_file(filename):
 
 @app.route('/')
 def index():
-    return "Chatify Backend with Signaling is running!"
+    return "ConnectNow Backend with Signaling is running!"
 
 if __name__ == '__main__':
     if os.environ.get('FLASK_ENV') == 'development':
@@ -57,4 +57,5 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_ENV') == 'development'
     
+    print(f"ConnectNow Backend is starting on port {port}...")
     socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode)
