@@ -13,6 +13,11 @@ export const StylesChatView = styled.div<StyledProps>`
   padding: 20px;
   height: 100%;
   overflow-y: auto;
+  background: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.chatBackground;
+    if (theme === "glass") return color.glassMode.chatBackground;
+    return "transparent";
+  }};
 
   &::-webkit-scrollbar {
     width: 10px;
@@ -32,8 +37,11 @@ export const StylesChatView = styled.div<StyledProps>`
 `;
 
 export const Text = styled.p<StyledProps>`
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.text;
+    if (theme === "glass") return color.glassMode.text;
+    return theme === "light" ? color.lightMode.text : color.darkMode.text;
+  }};
   font-size: calc(18 / 16 * 1rem);
   @media screen and (max-width: 440px) {
     font-size: 1rem;

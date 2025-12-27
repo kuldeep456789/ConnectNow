@@ -55,7 +55,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
         };
     }, [room]);
 
-    
+
     useEffect(() => {
         let animationFrameId: number;
         const loop = async () => {
@@ -69,7 +69,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
         return () => cancelAnimationFrame(animationFrameId);
     }, [landmarks, boundingBox]);
 
-    
+
     useEffect(() => {
         if (gesture && gesture !== lastGestureRef.current) {
             handleGestureAction(gesture);
@@ -77,10 +77,12 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
         }
     }, [gesture]);
 
+    // This function is likely intended for use within useHandGestures.ts
+    // but is placed here as per the provided snippet's implied location.
     const drawTracking = () => {
         const canvas = canvasRef.current;
         const video = myVideo.current;
-        if (!canvas || !video || !landmarks) return;
+        if (!canvas || !video || !landmarks || landmarks.length === 0) return;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
@@ -90,7 +92,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        
+
         if (boundingBox) {
             ctx.strokeStyle = "#646cff";
             ctx.lineWidth = 3;
@@ -103,7 +105,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             );
             ctx.stroke();
 
-            
+
             ctx.fillStyle = "#646cff";
             ctx.font = "bold 14px Arial";
             ctx.fillText(
@@ -113,7 +115,7 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             );
         }
 
-        
+
         ctx.fillStyle = "#ffffff";
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 1;
@@ -123,14 +125,14 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             ctx.fill();
         });
 
-        
+
         const connections = [
-            [0, 1], [1, 2], [2, 3], [3, 4], 
-            [0, 5], [5, 6], [6, 7], [7, 8], 
-            [5, 9], [9, 10], [10, 11], [11, 12], 
-            [9, 13], [13, 14], [14, 15], [15, 16], 
-            [13, 17], [17, 18], [18, 19], [19, 20], 
-            [0, 17] 
+            [0, 1], [1, 2], [2, 3], [3, 4],
+            [0, 5], [5, 6], [6, 7], [7, 8],
+            [5, 9], [9, 10], [10, 11], [11, 12],
+            [9, 13], [13, 14], [14, 15], [15, 16],
+            [13, 17], [17, 18], [18, 19], [19, 20],
+            [0, 17]
         ];
         ctx.beginPath();
         connections.forEach(([s, e]) => {
@@ -149,6 +151,10 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
                 actionLabel = "Sending Great! 👍";
                 content = "Great! 👍";
                 break;
+            case "DISLIKE":
+                actionLabel = "No... 👎";
+                content = "No... 👎";
+                break;
             case "PEACE":
                 actionLabel = "Sending ❤️";
                 content = "❤️";
@@ -156,6 +162,22 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
             case "OPEN_PALM":
                 actionLabel = "Hand Raised 🖐️";
                 content = "Raised hand 🖐️";
+                break;
+            case "OK":
+                actionLabel = "Got it! 👌";
+                content = "Got it! 👌";
+                break;
+            case "POINTING":
+                actionLabel = "Look there! 👆";
+                content = "Look there! 👆";
+                break;
+            case "ROCK":
+                actionLabel = "Rock on! 🤘";
+                content = "Rock on! 🤘";
+                break;
+            case "I_LOVE_YOU":
+                actionLabel = "Love you too! 🤟";
+                content = "Love you! 🤟";
                 break;
             default:
                 return;
@@ -241,9 +263,10 @@ export const VideoCallWindow: React.FC<VideoCallWindowProps> = ({ room, onClose 
                 {showGuide && (
                     <RobotGuide>
                         <h4>🤖 Robot Assistant Guide</h4>
-                        <div className="guide-item"><span>👍</span> Thumbs Up: Send <b>"Great! 👍"</b></div>
-                        <div className="guide-item"><span>✌️</span> Peace Sign: Send <b>"❤️"</b></div>
-                        <div className="guide-item"><span>🖐️</span> Open Palm: <b>Raise Hand</b> notification</div>
+                        <div className="guide-item"><span>👍</span> Thumbs Up: <b>"Great!"</b> | <span>👎</span> Down: <b>"No"</b></div>
+                        <div className="guide-item"><span>✌️</span> Peace: <b>"❤️"</b> | <span>👌</span> OK: <b>"Got it!"</b></div>
+                        <div className="guide-item"><span>👆</span> Point: <b>"Look!"</b> | <span>🤘</span> Rock: <b>"🤘"</b></div>
+                        <div className="guide-item"><span>🤟</span> ILY: <b>"Love you!"</b> | <span>🖐️</span> Palm: <b>Raise Hand</b></div>
                         <p className="hint">The Robot is watching your hand to help you chat!</p>
                     </RobotGuide>
                 )}

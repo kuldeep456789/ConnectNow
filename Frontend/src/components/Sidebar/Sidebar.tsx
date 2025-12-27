@@ -1,6 +1,6 @@
 import ClickAwayListener from "react-click-away-listener";
 import { Link, useNavigate } from "react-router-dom";
-import { LuPanelLeftClose, LuPanelLeftOpen, LuSettings } from "react-icons/lu";
+import { LuChevronDown, LuPanelLeftClose, LuPanelLeftOpen, LuSettings } from "react-icons/lu";
 import { useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
@@ -25,7 +25,9 @@ import {
   SidebarFooter,
   SettingsButton,
   AvatarWrapper,
-  OnlineIndicator
+  OnlineIndicator,
+  SectionHeader,
+  CollapseToggle,
 } from "./Style";
 import { useTheme } from "../../hooks/useTheme";
 import { useUserStore } from "../../hooks";
@@ -47,6 +49,7 @@ export function Sidebar() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [isContactsCollapsed, setIsContactsCollapsed] = useState(false);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
@@ -213,47 +216,51 @@ export function Sidebar() {
 
       { }
       <ContactsSection theme={theme} $collapsed={collapsed}>
-        <SectionTitle theme={theme}>
-          All Contacts
-        </SectionTitle>
-        {loadingUsers ? (
-          <Container>
-            <Spinner />
-          </Container>
-        ) : filteredUsers.length === 0 ? (
-          <Container>
-            <Text theme={theme}>
-              No contacts available
-            </Text>
-          </Container>
-        ) : (
-          filteredUsers.map((user: any) => {
-            const displayName = user.displayName || user.email?.split("@")[0] || "User";
-            const photo = user.photoURL ? IMAGE_PROXY(user.photoURL) : null;
+        <SectionHeader theme={theme} onClick={() => setIsContactsCollapsed(!isContactsCollapsed)}>
+          <SectionTitle theme={theme}>All Contacts</SectionTitle>
+          <CollapseToggle theme={theme} $isCollapsed={isContactsCollapsed}>
+            <LuChevronDown size={18} />
+          </CollapseToggle>
+        </SectionHeader>
 
-            return (
-              <UserItem
-                key={user.uid || user.id}
-                theme={theme}
-                onClick={() => handleUserClick(user)}
-              >
-                <AvatarWrapper>
-                  <Avatar
-                    src={photo}
-                    name={displayName}
-                    size="40px"
-                  />
-                  <OnlineIndicator />
-                </AvatarWrapper>
-                {!collapsed && (
-                  <UserInfo $collapsed={collapsed}>
-                    <UserName theme={theme} className="truncate">{displayName}</UserName>
-                    <UserEmail theme={theme} className="truncate">{user.email}</UserEmail>
-                  </UserInfo>
-                )}
-              </UserItem>
-            );
-          })
+        {!isContactsCollapsed && (
+          <>
+            {loadingUsers ? (
+              <Container>
+                <Spinner />
+              </Container>
+            ) : filteredUsers.length === 0 ? (
+              <div style={{ padding: "10px 20px", opacity: 0.5 }}>No contacts found</div>
+            ) : (
+              filteredUsers.map((user: any) => {
+                const displayName = user.displayName || user.email?.split("@")[0] || "User";
+                const photo = user.photoURL ? IMAGE_PROXY(user.photoURL) : null;
+
+                return (
+                  <UserItem
+                    key={user.uid || user.id}
+                    theme={theme}
+                    onClick={() => handleUserClick(user)}
+                  >
+                    <AvatarWrapper>
+                      <Avatar
+                        src={photo}
+                        name={displayName}
+                        size="40px"
+                      />
+                      <OnlineIndicator />
+                    </AvatarWrapper>
+                    {!collapsed && (
+                      <UserInfo $collapsed={collapsed}>
+                        <UserName theme={theme} className="truncate">{displayName}</UserName>
+                        <UserEmail theme={theme} className="truncate">{user.email}</UserEmail>
+                      </UserInfo>
+                    )}
+                  </UserItem>
+                );
+              })
+            )}
+          </>
         )}
       </ContactsSection>
 

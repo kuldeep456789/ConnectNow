@@ -6,8 +6,24 @@
   box-sizing: border-box;
   font-family: "Roboto", sans-serif;
 }
+
 body {
   background-color: #f6f6f6;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+div,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input {
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
 
 a {

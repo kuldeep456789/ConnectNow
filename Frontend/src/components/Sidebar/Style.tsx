@@ -5,8 +5,11 @@ import { StyledProps, color } from "../../library";
 export const ToggleButton = styled.button<StyledProps>`
   background: transparent;
   border: none;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.navText : color.darkMode.navText};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.navText;
+    if (theme === "glass") return color.glassMode.navText;
+    return theme === "light" ? color.lightMode.navText : color.darkMode.navText;
+  }};
   cursor: pointer;
   padding: 8px;
   display: flex;
@@ -51,8 +54,11 @@ export const StyledSideBar = styled.div<StyledProps & { $collapsed?: boolean }>`
   @media screen and (min-width: 869px) {
     width: ${({ $collapsed }) => $collapsed ? "80px" : "350px"};
     border-right: 1px solid
-      ${({ theme }) =>
-    theme === "light" ? color.lightMode.border : color.darkMode.border};
+      ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.border;
+    if (theme === "glass") return color.glassMode.border;
+    return theme === "light" ? color.lightMode.border : color.darkMode.border;
+  }};
   }
 `;
 
@@ -296,8 +302,21 @@ export const ContactsSection = styled.div<StyledProps & { $collapsed?: boolean }
     theme === "light" ? color.lightMode.border : color.darkMode.border};
 `;
 
-export const SectionTitle = styled.h3<StyledProps>`
+export const SectionHeader = styled.div<StyledProps>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 15px 20px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${({ theme }) =>
+    theme === "light" ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.02)"};
+  }
+`;
+
+export const SectionTitle = styled.h3<StyledProps>`
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -305,6 +324,18 @@ export const SectionTitle = styled.h3<StyledProps>`
   color: ${({ theme }) =>
     theme === "light" ? color.lightMode.text : color.darkMode.text};
   opacity: 0.7;
+  margin: 0;
+`;
+
+export const CollapseToggle = styled.div<StyledProps & { $isCollapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) =>
+    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  opacity: 0.5;
+  transition: transform 0.3s ease;
+  transform: ${({ $isCollapsed }) => $isCollapsed ? "rotate(-90deg)" : "rotate(0deg)"};
 `;
 
 export const UserItem = styled.div<StyledProps>`

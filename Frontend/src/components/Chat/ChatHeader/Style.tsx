@@ -9,16 +9,26 @@ export const Header = styled.div<StyledProps>`
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid
-    ${({ theme }) =>
-    theme === "light" ? color.lightMode.border : color.darkMode.border};
-  background-color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.background : color.darkMode.background};
+    ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.border;
+    if (theme === "glass") return color.glassMode.border;
+    return theme === "light" ? color.lightMode.border : color.darkMode.border;
+  }};
+  background-color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.background;
+    if (theme === "glass") return color.glassMode.background;
+    return theme === "light" ? color.lightMode.background : color.darkMode.background;
+  }};
+  backdrop-filter: ${({ theme }) => theme === "glass" ? "blur(10px)" : "none"};
 `;
 export const Name = styled.p<StyledProps>`
   font-weight: 500;
   margin-left: 15px;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.title : color.darkMode.title};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.title;
+    if (theme === "glass") return color.glassMode.title;
+    return theme === "light" ? color.lightMode.title : color.darkMode.title;
+  }};
 `;
 
 export const Wrapper = styled.div`
@@ -30,8 +40,11 @@ export const HomeLink = styled(Link) <StyledProps>`
   display: flex;
   font-size: 1.4rem;
   margin-right: 20px;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.text;
+    if (theme === "glass") return color.glassMode.text;
+    return theme === "light" ? color.lightMode.text : color.darkMode.text;
+  }};
 `;
 
 export const Relative = styled.div`
@@ -45,8 +58,11 @@ export const SettingButton = styled.button<StyledProps>`
   display: flex;
   font-size: 1.5rem;
   margin-left: 30px;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.text;
+    if (theme === "glass") return color.glassMode.text;
+    return theme === "light" ? color.lightMode.text : color.darkMode.text;
+  }};
   background-color: transparent;
 `;
 
@@ -55,8 +71,11 @@ export const GroupButton = styled.button<StyledProps>`
   display: flex;
   font-size: 2rem;
   margin-left: 30px;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.text;
+    if (theme === "glass") return color.glassMode.text;
+    return theme === "light" ? color.lightMode.text : color.darkMode.text;
+  }};
   background-color: transparent;
 `;
 
@@ -65,8 +84,11 @@ export const VideoButton = styled.button<StyledProps>`
   display: flex;
   font-size: 1.8rem;
   margin-left: 30px;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.text;
+    if (theme === "glass") return color.glassMode.text;
+    return theme === "light" ? color.lightMode.text : color.darkMode.text;
+  }};
   background-color: transparent;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -80,7 +102,10 @@ export const Email = styled.p<StyledProps>`
   font-size: 0.8rem;
   margin-left: 15px;
   margin-top: 2px;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.text : color.darkMode.text};
+  color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.text;
+    if (theme === "glass") return color.glassMode.text;
+    return theme === "light" ? color.lightMode.text : color.darkMode.text;
+  }};
   opacity: 0.7;
 `;

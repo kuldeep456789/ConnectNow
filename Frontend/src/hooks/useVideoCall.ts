@@ -25,7 +25,7 @@ export const useVideoCall = (room: string) => {
     const socket = socketService.getSocket();
 
     useEffect(() => {
-        
+
         socket.emit("join-room", { room });
 
         socket.on("signal", (data: { signal: SignalData; from: string }) => {
@@ -38,8 +38,13 @@ export const useVideoCall = (room: string) => {
             }
         });
 
+        socket.on("call-ended", () => {
+            leaveCall();
+        });
+
         return () => {
             socket.off("signal");
+            socket.off("call-ended");
             leaveCall();
         };
     }, [room]);
@@ -100,6 +105,8 @@ export const useVideoCall = (room: string) => {
             callAccepted: false,
             callEnded: true,
         });
+
+        socket.emit("signal", { signal: { type: "call-ended" }, room });
 
         if (connectionRef.current) {
             connectionRef.current.destroy();

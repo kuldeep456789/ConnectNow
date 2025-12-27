@@ -56,10 +56,10 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
 
       const photoURL = uploadRes.data.url;
 
-      
+
       const profileRes = await api.put("/profile", { photoURL });
 
-      
+
       setCurrentUser({
         ...currentUser,
         photoURL: profileRes.data.user.photoURL,
@@ -79,10 +79,10 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
 
     setUploading(true);
     try {
-      
+
       const profileRes = await api.put("/profile", { photoURL: "" });
 
-      
+
       setCurrentUser({
         ...currentUser,
         photoURL: profileRes.data.user.photoURL,
@@ -107,7 +107,7 @@ export function Profile({ theme, setProfileOpen, isOpen }: ProfileProps) {
     try {
       const res = await api.put("/profile", { displayName });
 
-      
+
       setCurrentUser({
         ...currentUser,
         displayName: res.data.user.displayName,

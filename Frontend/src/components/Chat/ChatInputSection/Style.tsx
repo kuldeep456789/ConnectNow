@@ -8,10 +8,17 @@ export const Container = styled.div<StyledProps>`
   align-items: center;
   justify-content: center;
   border-top: 1px solid
-    ${({ theme }) =>
-      theme === "light" ? color.lightMode.border : color.darkMode.border};
-  background-color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.background : color.darkMode.background};
+    ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.border;
+    if (theme === "glass") return color.glassMode.border;
+    return theme === "light" ? color.lightMode.border : color.darkMode.border;
+  }};
+  background-color: ${({ theme }) => {
+    if (theme === "vibrant") return color.vibrantMode.background;
+    if (theme === "glass") return color.glassMode.background;
+    return theme === "light" ? color.lightMode.background : color.darkMode.background;
+  }};
+  backdrop-filter: ${({ theme }) => theme === "glass" ? "blur(10px)" : "none"};
 `;
 
 export const EmojiPicker = styled.div<StyledProps>`
@@ -86,16 +93,16 @@ export const Input = styled.input<StyledProps>`
       : color.darkMode.chatBackground};
   border: 1px solid
     ${({ theme }) =>
-      theme === "light"
-        ? color.lightMode.chatBackground
-        : color.darkMode.chatBackground};
+    theme === "light"
+      ? color.lightMode.chatBackground
+      : color.darkMode.chatBackground};
 
   color: ${({ theme }) =>
     theme === "light" ? color.lightMode.title : color.darkMode.title};
 
   ::placeholder {
     color: ${({ theme }) =>
-      theme === "light" ? color.lightMode.text : color.darkMode.text};
+    theme === "light" ? color.lightMode.text : color.darkMode.text};
   }
 `;
 
@@ -119,7 +126,7 @@ export const SendButton = styled.button<StyledProps>`
   color: ${({ theme }) => (theme === "light" ? color.primary : color.primary)};
   &:disabled {
     color: ${({ theme }) =>
-      theme === "light" ? color.lightMode.text : color.darkMode.text};
+    theme === "light" ? color.lightMode.text : color.darkMode.text};
   }
 `;
 
@@ -156,7 +163,7 @@ export const ReplyContainer = styled.div<StyledProps>`
     theme === "light" ? color.lightMode.background : color.darkMode.background};
   border-top: 1px solid
     ${({ theme }) =>
-      theme === "light" ? color.lightMode.border : color.darkMode.border};
+    theme === "light" ? color.lightMode.border : color.darkMode.border};
 `;
 
 export const ReplyTitle = styled.div<StyledProps>`

@@ -25,4 +25,28 @@ export const color = {
     text: "#afafaf",
     title: "#f2f2f2",
   },
+
+  vibrantMode: {
+    primaryHoverLight: "#ff4081",
+    navText: "#eee",
+    navHoverText: "#fff",
+    chatBackground: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+    background: "#1a1a2e",
+    border: "rgba(255,255,255,0.1)",
+    text: "#8b949e",
+    title: "#e6edf3",
+    accent: "#ff006e",
+  },
+
+  glassMode: {
+    primaryHoverLight: "#00d4ff",
+    navText: "#333",
+    navHoverText: "#000",
+    chatBackground: "rgba(255, 255, 255, 0.4)",
+    background: "rgba(255, 255, 255, 0.1)",
+    border: "rgba(255, 255, 255, 0.2)",
+    text: "#24292f",
+    title: "#11181c",
+    accent: "#0096c7",
+  }
 };

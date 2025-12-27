@@ -95,9 +95,19 @@ export function SelectConversation({
 
 
   const formatTimestamp = () => {
-    if (!conversation.updatedAt) return "";
+    const updatedAt = conversation.updatedAt;
+    let msgDate: Date;
 
-    const msgDate = new Date(conversation.updatedAt.seconds * 1000);
+    if (typeof updatedAt === 'string') {
+      msgDate = new Date(updatedAt);
+    } else if (updatedAt && typeof updatedAt === 'object' && 'seconds' in updatedAt) {
+      msgDate = new Date(updatedAt.seconds * 1000);
+    } else {
+      msgDate = new Date(updatedAt);
+    }
+
+    if (isNaN(msgDate.getTime())) return "";
+
     const now = new Date();
     const diffMs = now.getTime() - msgDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));

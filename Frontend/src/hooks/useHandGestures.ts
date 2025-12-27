@@ -12,16 +12,26 @@ export interface BoundingBox {
 const classifyGesture = (landmarks: any[]) => {
     if (!landmarks || landmarks.length === 0) return null;
 
-    const thumbTip = landmarks[4];
-    const isExtended = (tip: any, pip: any) => tip.y < pip.y;
+    const isExtended = (tipId: number, baseId: number) => landmarks[tipId].y < landmarks[baseId].y;
 
-    const indexExtended = isExtended(landmarks[8], landmarks[6]);
-    const middleExtended = isExtended(landmarks[12], landmarks[10]);
-    const ringExtended = isExtended(landmarks[16], landmarks[14]);
-    const pinkyExtended = isExtended(landmarks[20], landmarks[18]);
+    const indexExtended = isExtended(8, 6);
+    const middleExtended = isExtended(12, 10);
+    const ringExtended = isExtended(16, 14);
+    const pinkyExtended = isExtended(20, 18);
 
+    // Distance check for OK gesture
+    const distThumbIndex = Math.sqrt(
+        Math.pow(landmarks[4].x - landmarks[8].x, 2) +
+        Math.pow(landmarks[4].y - landmarks[8].y, 2)
+    );
+
+    if (distThumbIndex < 0.05 && middleExtended && ringExtended && pinkyExtended) return "OK";
     if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) return "PEACE";
-    if (thumbTip.y < landmarks[3].y && !indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "THUMBS_UP";
+    if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "POINTING";
+    if (indexExtended && !middleExtended && !ringExtended && pinkyExtended) return "ROCK";
+    if (indexExtended && !middleExtended && !ringExtended && pinkyExtended && landmarks[4].y < landmarks[3].y) return "I_LOVE_YOU";
+    if (landmarks[4].y < landmarks[3].y && !indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "THUMBS_UP";
+    if (landmarks[4].y > landmarks[3].y && !indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "DISLIKE";
     if (indexExtended && middleExtended && ringExtended && pinkyExtended) return "OPEN_PALM";
     if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "FIST";
 
