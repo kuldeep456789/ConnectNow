@@ -278,7 +278,18 @@ def create_conversation(current_user_id):
     
     recipient_id = recipient[0]
 
-
+    # Check for existing 1-on-1 conversation
+    cur.execute("""
+        SELECT cp1.conversation_id 
+        FROM conversation_participants cp1
+        JOIN conversation_participants cp2 ON cp1.conversation_id = cp2.conversation_id
+        WHERE cp1.user_id = %s AND cp2.user_id = %s
+        AND (SELECT COUNT(*) FROM conversation_participants WHERE conversation_id = cp1.conversation_id) = 2
+    """, (current_user_id, recipient_id))
+    
+    existing_conv = cur.fetchone()
+    if existing_conv:
+        return jsonify({'conversationId': existing_conv[0]}), 200
 
     cur.execute("INSERT INTO conversations (last_message) VALUES ('') RETURNING id")
     conversation_id = cur.fetchone()[0]
@@ -300,12 +311,15 @@ def get_conversations(current_user_id):
         return jsonify({'message': 'Database connection failed'}), 500
     cur = conn.cursor()
     
+    # Get current user's UID for filter
+    cur.execute("SELECT uid FROM users WHERE id = %s", (current_user_id,))
+    current_uid = cur.fetchone()[0]
 
     cur.execute("""
         SELECT c.id, c.last_message, c.updated_at 
         FROM conversations c
         JOIN conversation_participants cp ON c.id = cp.conversation_id
-        WHERE cp.user_id = %s
+        WHERE cp.user_id = %s AND (c.last_message IS NOT NULL AND LENGTH(TRIM(c.last_message)) > 0)
         ORDER BY c.updated_at DESC
     """, (current_user_id,))
     
@@ -319,23 +333,34 @@ def get_conversations(current_user_id):
             SELECT u.uid, u.email, u.display_name, u.photo_url
             FROM users u
             JOIN conversation_participants cp ON u.id = cp.user_id
-            WHERE cp.conversation_id = %s AND u.id != %s
-        """, (conv_id, current_user_id))
+            WHERE cp.conversation_id = %s
+        """, (conv_id,))
         
-        other_user = cur.fetchone()
+        participants = cur.fetchall()
+        participant_uids = [p[0] for p in participants]
+        
+        # Debug logging
+        # print(f"Conv {conv_id} participants: {participant_uids}")
+        # print(f"Current UID: {current_uid}")
+
+        # Find the other user (if 1-on-1) or just use the first non-me user for groups
+        other_user_data = next((p for p in participants if p[0] != current_uid), participants[0] if participants else None)
         
         user_info = {}
-        if other_user:
+        if other_user_data:
             user_info = {
-                'uid': other_user[0],
-                'email': other_user[1],
-                'displayName': other_user[2],
-                'photoURL': other_user[3]
+                'uid': other_user_data[0],
+                'email': other_user_data[1],
+                'displayName': other_user_data[2],
+                'photoURL': other_user_data[3]
             }
+            # print(f"Chosen other user: {user_info['displayName']} ({user_info['uid']})")
 
         result.append({
             'conversationId': conv_id,
             'lastMessage': conv[1],
+            'updatedAt': conv[2].isoformat() if conv[2] else None,
+            'users': participant_uids,
             'userInfo': user_info 
         })
 
@@ -428,9 +453,6 @@ def delete_conversation(current_user_id, conversation_id):
         conn.close()
 
     return jsonify({'message': 'Conversation deleted successfully'}), 200
-
-
-
 @api_bp.route('/messages/<int:conversation_id>', methods=['GET'])
 @token_required
 def get_messages(current_user_id, conversation_id):
@@ -455,13 +477,6 @@ def get_messages(current_user_id, conversation_id):
     messages = cur.fetchall()
     result = []
     for msg in messages:
-
-        
-
-
-
-
-        
         result.append({
             'id': msg[0],
             'senderId': msg[5],
@@ -473,7 +488,6 @@ def get_messages(current_user_id, conversation_id):
             'file': msg[9],
             'isDeleted': msg[8]
         })
-
     cur.close()
     conn.close()
     return jsonify(result)

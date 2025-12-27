@@ -16,6 +16,14 @@ export const Flex = styled.div<StyledProps>`
   border-bottom: 1px solid
     ${({ theme }) =>
     theme === "light" ? color.lightMode.border : color.darkMode.border};
+
+  &.active {
+    background-color: ${({ theme }) =>
+    theme === "light" ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.08)"};
+    border-left: 3px solid ${color.primary};
+  }
+
+  transition: background-color 0.2s ease;
 `;
 
 export const DeleteButton = styled.button`
@@ -45,6 +53,9 @@ export const Name = styled.p<StyledProps>`
   padding: 0;
   color: ${({ theme }) =>
     theme === "light" ? color.lightMode.title : color.darkMode.title};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 export const LastMessage = styled.p<StyledProps>`

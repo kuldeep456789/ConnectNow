@@ -73,27 +73,27 @@ export function SelectConversation({
       </Flex>
     );
 
-  
+
   const formatLastMessage = () => {
     if (!conversation.lastMessage) return "No messages yet";
 
     const msg = conversation.lastMessage;
 
-    
+
     if (msg.includes("/uploads/") && (msg.includes(".jpg") || msg.includes(".png") || msg.includes(".jpeg") || msg.includes(".gif"))) {
       return "📷 Photo";
     }
 
-    
+
     if (msg.includes("/uploads/")) {
       return "📎 File";
     }
 
-    
+
     return msg.length > 35 ? msg.slice(0, 35) + "..." : msg;
   };
 
-  
+
   const formatTimestamp = () => {
     if (!conversation.updatedAt) return "";
 
@@ -103,7 +103,7 @@ export function SelectConversation({
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-      
+
       return msgDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } else if (diffDays === 1) {
       return "Yesterday";
@@ -114,8 +114,21 @@ export function SelectConversation({
     }
   };
 
-  
-  if (conversation.users?.length === 2 && theme)
+  // Handle 1-on-1 (Private) conversations
+  if (!conversation.group && theme) {
+    const otherUser = filtered?.[0]?.data();
+    const otherUserId = filtered?.[0]?.id;
+
+    // Prioritize direct userInfo from backend if useUsersInfo hasn't loaded yet
+    const backendUserInfo = conversation.userInfo;
+
+    const name = otherUser?.displayName || backendUserInfo?.displayName ||
+      otherUser?.email || backendUserInfo?.email ||
+      otherUserId || backendUserInfo?.uid || "User";
+
+    const photo = otherUser?.photoURL ? IMAGE_PROXY(otherUser.photoURL) :
+      backendUserInfo?.photoURL ? IMAGE_PROXY(backendUserInfo.photoURL) : null;
+
     return (
       <Link to={`/${conversationId}`} style={{ textDecoration: "none" }}>
         <Flex
@@ -124,16 +137,8 @@ export function SelectConversation({
         >
           <AvatarWrapper>
             <Avatar
-              src={filtered?.[0]?.data()?.photoURL ? IMAGE_PROXY(filtered?.[0]?.data()?.photoURL) : null}
-              name={
-                filtered?.[0]?.data()?.displayName ||
-                filtered?.[0]?.data()?.email ||
-                filtered?.[0]?.id ||
-                conversation.users?.find((uid: string) => uid !== currentUser?.uid) ||
-                currentUser?.displayName ||
-                currentUser?.email ||
-                "?"
-              }
+              src={photo}
+              name={name}
               size="55px"
               style={{ marginRight: "10px" }}
             />
@@ -143,7 +148,7 @@ export function SelectConversation({
             <>
               <MessageInfo>
                 <TopRow>
-                  <Name theme={theme}>{filtered?.[0].data()?.displayName}</Name>
+                  <Name theme={theme}>{name}</Name>
                   <Timestamp theme={theme}>{formatTimestamp()}</Timestamp>
                 </TopRow>
                 <LastMessage theme={theme}>
@@ -159,8 +164,9 @@ export function SelectConversation({
         </Flex>
       </Link>
     );
+  }
 
-  
+
   return (
     <Link to={`/${conversationId}`} style={{ textDecoration: "none" }}>
       {theme && (

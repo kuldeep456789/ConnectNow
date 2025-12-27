@@ -10,7 +10,14 @@ export type StyledProps = {
 };
 
 export type ConversationInfoType = {
+  conversationId?: string | number;
   users: string[];
+  userInfo?: {
+    uid: string;
+    email: string;
+    displayName: string;
+    photoURL: string;
+  };
   group?: {
     admins: string[];
     groupName: null | string;
@@ -19,14 +26,11 @@ export type ConversationInfoType = {
   lastMessage?: string | null;
   participants?: any[];
 
-  seen: {
+  seen?: {
     [key: string]: string;
   };
-  updatedAt: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  theme: string;
+  updatedAt?: any;
+  theme?: string;
 };
 
 export interface SavedUserType {

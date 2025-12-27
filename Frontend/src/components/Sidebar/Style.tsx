@@ -165,28 +165,7 @@ export const SignOutButton = styled.button<StyledProps>`
       : color.darkMode.navHoverText};
   }
 `;
-export const ChatButton = styled.button<StyledProps>`
-  width: 50px;
-  height: 50px;
-  border: none;
-  display: flex;
-  margin-right: 15px;
-  border-radius: 10%;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.navText : color.darkMode.navText};
-  background-color: ${({ theme }) =>
-    theme === "light" ? color.lightMode.border : color.darkMode.border};
-  transition: all 0.2s ease;
-  :hover {
-    color: ${({ theme }) =>
-    theme === "light"
-      ? color.lightMode.navHoverText
-      : color.darkMode.navHoverText};
-  }
-`;
+
 
 
 
@@ -194,9 +173,7 @@ export const SecondaryContainer = styled.div<StyledProps>`
   position: relative;
 `;
 
-export const PrimaryContainer = styled.div<StyledProps>`
-  position: relative;
-`;
+
 
 export const Container = styled.div`
   display: flex;
@@ -424,6 +401,9 @@ export const UserName = styled.p<StyledProps>`
   color: ${({ theme }) =>
     theme === "light" ? color.lightMode.title : color.darkMode.title};
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 export const UserEmail = styled.p<StyledProps>`
@@ -432,6 +412,9 @@ export const UserEmail = styled.p<StyledProps>`
     theme === "light" ? color.lightMode.text : color.darkMode.text};
   opacity: 0.7;
   margin: 2px 0 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 

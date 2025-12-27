@@ -7,6 +7,7 @@ import { ThemeProvider } from "./hooks/useTheme";
 import { useUserStore } from "./hooks";
 import { Spinner } from "./components/Core";
 import api from "./services/api";
+import { MainLayout } from "./components/Layout/MainLayout";
 
 const SignIn = lazy(() => import("./pages/SignIn/SignIn"));
 const Home = lazy(() => import("./pages/Home/Home"));
@@ -41,14 +42,43 @@ export default function App() {
     <ThemeProvider>
       <Toaster position="top-center" reverseOrder={false} />
       <Routes>
+        {/* Protected Routes wrapped in MainLayout */}
         <Route
-          path="/"
           element={
             <PrivateRoute>
-              <Home />
+              <MainLayout />
             </PrivateRoute>
           }
-        />
+        >
+          <Route
+            path="/"
+            element={
+              <Suspense
+                fallback={
+                  <div className="h-full flex items-center justify-center">
+                    <Spinner />
+                  </div>
+                }
+              >
+                <Home />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/:id"
+            element={
+              <Suspense
+                fallback={
+                  <div className="h-full flex items-center justify-center">
+                    <Spinner />
+                  </div>
+                }
+              >
+                <Chat />
+              </Suspense>
+            }
+          />
+        </Route>
 
         <Route
           path="/signin"
@@ -63,23 +93,6 @@ export default function App() {
               <AuthContainer>
                 <SignIn />
               </AuthContainer>
-            </Suspense>
-          }
-        />
-
-        <Route
-          path="/:id"
-          element={
-            <Suspense
-              fallback={
-                <AuthContainer>
-                  <Spinner />
-                </AuthContainer>
-              }
-            >
-              <PrivateRoute>
-                <Chat />
-              </PrivateRoute>
             </Suspense>
           }
         />

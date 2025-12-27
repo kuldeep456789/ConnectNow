@@ -6,8 +6,7 @@ import { useDocumentQuery, useCollectionQuery } from "../../hooks";
 import { ConversationInfoType, ReplyInfoType } from "../../library";
 import { useTheme, useUserStore } from "../../hooks";
 import { Grow } from "@mui/material";
-import { Sidebar } from "../../components/Sidebar/Sidebar";
-import { Wrapper, MobileHide, ChatWrapper, Text } from "./Style";
+import { Wrapper, ChatWrapper, Text } from "./Style";
 import { Spinner } from "../../components/Core";
 import { ChatHeader, ChatInputSection, ChatView } from "../../components/Chat";
 import { VideoCallWindow } from "../../components/Chat/VideoCall/VideoCallWindow";
@@ -26,7 +25,7 @@ export default function Chat() {
   const { currentUser } = useUserStore();
   const [replyInfo, setReplyInfo] = useState<ReplyInfoType | null>(null);
 
-  
+
   const hasAccess = conversation?.users?.includes(currentUser?.uid as string);
 
   const { data: messagesList, loading: msgLoading, error: msgError, refetch: refetchMessages } = useCollectionQuery(
@@ -63,9 +62,6 @@ export default function Chat() {
 
   return (
     <Wrapper theme={theme}>
-      <MobileHide>
-        <Sidebar />
-      </MobileHide>
       <ChatWrapper>
         {loading ? (
           <Grow in={loading}>

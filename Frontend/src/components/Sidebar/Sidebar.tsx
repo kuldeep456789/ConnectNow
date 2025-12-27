@@ -1,13 +1,11 @@
 import ClickAwayListener from "react-click-away-listener";
 import { Link, useNavigate } from "react-router-dom";
-import { LuPlus, LuPanelLeftClose, LuPanelLeftOpen, LuSettings } from "react-icons/lu";
+import { LuPanelLeftClose, LuPanelLeftOpen, LuSettings } from "react-icons/lu";
 import { useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
-  ChatButton,
   Container,
   StyledNavbar,
-  PrimaryContainer,
   ProfileButton,
   ProfileMenu,
   ShowProfileButton,
@@ -35,7 +33,7 @@ import { Spinner } from "../Core";
 import {
   IMAGE_PROXY,
 } from "../../library";
-import { CreateConversation, Profile, SelectConversation } from ".";
+import { Profile, SelectConversation } from ".";
 import { Avatar } from "../Shared";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import api from "../../services/api";
@@ -46,7 +44,6 @@ export function Sidebar() {
   const { currentUser, setCurrentUser } = useUserStore();
   const [isSettingOpen, setIsSettingOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const [isConversationModalOpen, setConversationModalOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -62,13 +59,13 @@ export function Sidebar() {
     "/conversations"
   );
 
-  
+
   useState(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
         const res = await api.get("/users/search?q=");
-        setAllUsers(res.data.users || []);
+        setAllUsers(Array.isArray(res.data) ? res.data : res.data.users || []);
       } catch (err) {
         console.error("Failed to fetch users:", err);
       } finally {
@@ -90,28 +87,27 @@ export function Sidebar() {
     setIsSettingOpen(false);
   };
 
-  
+
   const handleUserClick = async (user: any) => {
     try {
-      
+
       const existingConv = data?.find((conv: any) => {
         return conv.users?.length === 2 && conv.users?.includes(user.uid);
       });
 
       if (existingConv) {
-        
+
         navigate(`/${existingConv.conversationId}`);
       } else {
-        
+
         const res = await api.post("/conversations", {
-          users: [user.uid],
-          group: null,
+          recipientUid: user.uid
         });
 
-        
+
         refetch && refetch();
 
-        
+
         navigate(`/${res.data.conversationId}`);
         toast.success(`Started conversation with ${user.displayName}`);
       }
@@ -121,7 +117,7 @@ export function Sidebar() {
     }
   };
 
-  
+
   const filteredConversations = useMemo(() => {
     if (!data) return [];
 
@@ -131,7 +127,7 @@ export function Sidebar() {
 
 
 
-    
+
     filtered.sort((a: any, b: any) => {
       const aTime = a.updatedAt?.seconds || 0;
       const bTime = b.updatedAt?.seconds || 0;
@@ -141,27 +137,18 @@ export function Sidebar() {
     return filtered;
   }, [data, currentUser]);
 
-  
+
   const filteredUsers = useMemo(() => {
     if (!allUsers) return [];
 
-    
+
     const filtered = allUsers.filter((user: any) => user.uid !== currentUser?.uid);
     return filtered;
   }, [allUsers, currentUser]);
 
 
 
-  const handlePlusClick = () => {
-    if (collapsed) setCollapsed(false);
-    
-    
-    
-    
-    
-    
-    setConversationModalOpen(true);
-  };
+
 
   return (
     <StyledSideBar theme={theme} $collapsed={collapsed}>
@@ -181,15 +168,7 @@ export function Sidebar() {
         )}
 
         <Wrapper theme={theme}>
-          <PrimaryContainer theme={theme}>
-            <ChatButton
-              theme={theme}
-              aria-label="New conversation"
-              onClick={handlePlusClick}
-            >
-              <LuPlus />
-            </ChatButton>
-          </PrimaryContainer>
+
           <ToggleButton theme={theme} onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <LuPanelLeftOpen size={24} /> : <LuPanelLeftClose size={24} />}
           </ToggleButton>
@@ -204,19 +183,13 @@ export function Sidebar() {
         />
       )}
 
-      {isConversationModalOpen && theme && (
-        <CreateConversation
-          theme={theme}
-          isOpen={isConversationModalOpen}
-          setConversationModalOpen={setConversationModalOpen}
-        />
-      )}
 
 
 
 
 
-      {}
+
+      { }
       {loading ? (
         <Spinner />
       ) : error ? (
@@ -238,7 +211,7 @@ export function Sidebar() {
         </SelectConversationContainer>
       ) : null}
 
-      {}
+      { }
       <ContactsSection theme={theme} $collapsed={collapsed}>
         <SectionTitle theme={theme}>
           All Contacts
@@ -254,28 +227,33 @@ export function Sidebar() {
             </Text>
           </Container>
         ) : (
-          filteredUsers.map((user: any) => (
-            <UserItem
-              key={user.uid}
-              theme={theme}
-              onClick={() => handleUserClick(user)}
-            >
-              <AvatarWrapper>
-                <Avatar
-                  src={user.photoURL ? IMAGE_PROXY(user.photoURL) : null}
-                  name={user.displayName || user.email || "?"}
-                  size="40px"
-                />
-                <OnlineIndicator />
-              </AvatarWrapper>
-              {!collapsed && (
-                <UserInfo $collapsed={collapsed}>
-                  <UserName theme={theme}>{user.displayName || "Unknown"}</UserName>
-                  <UserEmail theme={theme}>{user.email}</UserEmail>
-                </UserInfo>
-              )}
-            </UserItem>
-          ))
+          filteredUsers.map((user: any) => {
+            const displayName = user.displayName || user.email?.split("@")[0] || "User";
+            const photo = user.photoURL ? IMAGE_PROXY(user.photoURL) : null;
+
+            return (
+              <UserItem
+                key={user.uid || user.id}
+                theme={theme}
+                onClick={() => handleUserClick(user)}
+              >
+                <AvatarWrapper>
+                  <Avatar
+                    src={photo}
+                    name={displayName}
+                    size="40px"
+                  />
+                  <OnlineIndicator />
+                </AvatarWrapper>
+                {!collapsed && (
+                  <UserInfo $collapsed={collapsed}>
+                    <UserName theme={theme} className="truncate">{displayName}</UserName>
+                    <UserEmail theme={theme} className="truncate">{user.email}</UserEmail>
+                  </UserInfo>
+                )}
+              </UserItem>
+            );
+          })
         )}
       </ContactsSection>
 
