@@ -11,8 +11,16 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
 
-allowed_origins = os.environ.get('ALLOWED_ORIGINS', '*').split(',')
-CORS(app, resources={r"/api/*": {"origins": allowed_origins}, r"/uploads/*": {"origins": allowed_origins}})
+default_origins = [
+    'https://connect-now-lyart.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+]
+allowed_origins = os.environ.get('ALLOWED_ORIGINS', '').split(',') if os.environ.get('ALLOWED_ORIGINS') else default_origins
+CORS(app, resources={
+    r"/api/*": {"origins": allowed_origins},
+    r"/uploads/*": {"origins": allowed_origins}
+})
 socketio.init_app(app, cors_allowed_origins=allowed_origins)
 
 app.register_blueprint(api_bp, url_prefix='/api')
