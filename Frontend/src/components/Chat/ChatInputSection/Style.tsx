@@ -4,7 +4,7 @@ import { StyledProps, color } from "../../../library";
 export const Container = styled.div<StyledProps>`
   display: flex;
   padding: 15px 20px;
-  position: relative;
+  position: relative; 
   align-items: center;
   justify-content: center;
   border-top: 1px solid
