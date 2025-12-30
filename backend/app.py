@@ -11,8 +11,9 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
 
-CORS(app)
-socketio.init_app(app)
+allowed_origins = os.environ.get('ALLOWED_ORIGINS', '*').split(',')
+CORS(app, resources={r"/api/*": {"origins": allowed_origins}, r"/uploads/*": {"origins": allowed_origins}})
+socketio.init_app(app, cors_allowed_origins=allowed_origins)
 
 app.register_blueprint(api_bp, url_prefix='/api')
 
